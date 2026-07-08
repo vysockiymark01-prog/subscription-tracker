@@ -1,0 +1,53 @@
+// Каталог популярных подписок для быстрого добавления.
+// Цены типовые — пользователь может изменить их при добавлении подписки.
+
+export const PRESETS = [
+  { id: 'yandex-plus', name: 'Яндекс Плюс', price: 399, category: 'other', color: '#FFCC00', letter: 'Я', cancelUrl: 'https://plus.yandex.ru', cancelHint: 'Управление подпиской — в настройках аккаунта Яндекс' },
+  { id: 'kinopoisk', name: 'Кинопоиск', price: 299, category: 'video', color: '#FF3D00', letter: 'К', cancelUrl: 'https://www.kinopoisk.ru', cancelHint: 'Управление подпиской — в настройках аккаунта Яндекс' },
+  { id: 'vk-music', name: 'VK Музыка', price: 169, category: 'music', color: '#0077FF', letter: 'V', cancelUrl: 'https://vk.com/music', cancelHint: 'Настройки → Подписки VK Донат/Музыка' },
+  { id: 'ozon-premium', name: 'Озон Premium', price: 199, category: 'other', color: '#005BFF', letter: 'O', cancelUrl: 'https://www.ozon.ru/premium', cancelHint: 'Личный кабинет → Ozon Premium → Управление подпиской' },
+  { id: 'sberprime', name: 'СберПрайм', price: 199, category: 'other', color: '#21A038', letter: 'C', cancelUrl: 'https://www.sberbank.ru/prime', cancelHint: 'Приложение СберБанк Онлайн → СберПрайм' },
+  { id: 'telegram-premium', name: 'Telegram Premium', price: 399, category: 'software', color: '#26A5E4', letter: 'T', cancelUrl: 'https://telegram.org', cancelHint: 'В приложении Telegram: Настройки → Telegram Premium' },
+  { id: 'litres', name: 'ЛитРес', price: 299, category: 'other', color: '#F58220', letter: 'Л', cancelUrl: 'https://www.litres.ru', cancelHint: 'Личный кабинет → Подписка' },
+  { id: 'wink', name: 'Wink', price: 249, category: 'video', color: '#7B2FF7', letter: 'W', cancelUrl: 'https://wink.ru', cancelHint: 'Личный кабинет → Подписки' },
+  { id: 'okko', name: 'Okko', price: 299, category: 'video', color: '#00D26A', letter: 'O', cancelUrl: 'https://okko.tv', cancelHint: 'Личный кабинет → Подписки' },
+  { id: 'ivi', name: 'IVI', price: 399, category: 'video', color: '#FF8A00', letter: 'I', cancelUrl: 'https://www.ivi.ru', cancelHint: 'Личный кабинет → Подписки' },
+  { id: 'start', name: 'START', price: 399, category: 'video', color: '#E8001C', letter: 'S', cancelUrl: 'https://start.ru', cancelHint: 'Личный кабинет → Подписка' },
+  { id: 'premier', name: 'Premier', price: 399, category: 'video', color: '#8B00FF', letter: 'P', cancelUrl: 'https://premier.one', cancelHint: 'Личный кабинет → Подписка' },
+  { id: 'mts-premium', name: 'МТС Premium', price: 399, category: 'other', color: '#E30611', letter: 'М', cancelUrl: 'https://premium.mts.ru', cancelHint: 'Личный кабинет МТС → Подписки' },
+  { id: 'youtube-premium', name: 'YouTube Premium', price: 399, category: 'video', color: '#FF0000', letter: 'Y', cancelUrl: 'https://www.youtube.com/paid_memberships', cancelHint: 'YouTube → Платные подписки' },
+  { id: 'spotify', name: 'Spotify', price: 169, category: 'music', color: '#1DB954', letter: 'S', cancelUrl: 'https://www.spotify.com/account/subscription/', cancelHint: 'Аккаунт → Подписка' },
+  { id: 'icloud', name: 'iCloud', price: 79, category: 'software', color: '#3693F3', letter: 'i', cancelUrl: 'https://appleid.apple.com', cancelHint: 'Настройки iPhone → Apple ID → Подписки' },
+  { id: 'netflix', name: 'Netflix', price: 799, category: 'video', color: '#E50914', letter: 'N', cancelUrl: 'https://www.netflix.com/youraccount', cancelHint: 'Аккаунт → Управление подпиской' },
+];
+
+export function searchPresets(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return PRESETS;
+  return PRESETS.filter((p) => p.name.toLowerCase().includes(q));
+}
+
+export function getPresetById(id) {
+  return PRESETS.find((p) => p.id === id) ?? null;
+}
+
+const FALLBACK_COLORS = ['#6C5CE7', '#00B894', '#0984E3', '#E17055', '#D63031', '#00CEC9', '#FDCB6E'];
+
+function hashColor(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+  }
+  return FALLBACK_COLORS[hash % FALLBACK_COLORS.length];
+}
+
+/**
+ * Возвращает {color, letter} для отображения иконки подписки:
+ * по пресету, если он указан в iconKey, иначе — по первой букве названия.
+ */
+export function getIconFor(subscription) {
+  const preset = subscription.iconKey ? getPresetById(subscription.iconKey) : null;
+  if (preset) return { color: preset.color, letter: preset.letter };
+  const name = subscription.name || '?';
+  return { color: hashColor(name), letter: name.trim().charAt(0).toUpperCase() || '?' };
+}
