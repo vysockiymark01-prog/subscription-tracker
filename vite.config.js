@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/subscription-tracker/',
   plugins: [
     react(),
     VitePWA({
@@ -17,8 +18,8 @@ export default defineConfig({
         theme_color: '#6C5CE7',
         background_color: '#0F0F14',
         display: 'standalone',
-        start_url: '/',
-        scope: '/',
+        start_url: '/subscription-tracker/',
+        scope: '/subscription-tracker/',
         icons: [
           {
             src: 'pwa-192x192.png',
