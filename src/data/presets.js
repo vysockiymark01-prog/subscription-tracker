@@ -26,6 +26,9 @@ export const PRESETS = [
   { id: 'mybook', name: 'MyBook', price: 299, category: 'other', color: '#E63950', letter: 'M', cancelUrl: 'https://mybook.ru', cancelHint: 'Личный кабинет → Подписка' },
   { id: 'google-one', name: 'Google One', price: 139, category: 'software', color: '#4285F4', letter: 'G', cancelUrl: 'https://one.google.com', cancelHint: 'Google One → Управление подпиской' },
   { id: 'chatgpt-plus', name: 'ChatGPT Plus', price: 1999, category: 'software', color: '#10A37F', letter: 'C', cancelUrl: 'https://chatgpt.com', cancelHint: 'Settings → Subscription в приложении ChatGPT' },
+  { id: 'vk-combo', name: 'VK Combo', price: 229, category: 'other', color: '#2787F5', letter: 'V', cancelUrl: 'https://vk.com', cancelHint: 'Настройки VK ID → Подписки → VK Combo' },
+  { id: 'stepik', name: 'Stepik', price: 599, category: 'education', color: '#33BDB0', letter: 'S', cancelUrl: 'https://stepik.org', cancelHint: 'Личный кабинет → Подписка' },
+  { id: 'mail-cloud', name: 'Облако Mail.ru', price: 199, category: 'software', color: '#005FF9', letter: 'О', cancelUrl: 'https://cloud.mail.ru', cancelHint: 'Настройки облака → Подписка' },
 ];
 
 export function searchPresets(query) {
