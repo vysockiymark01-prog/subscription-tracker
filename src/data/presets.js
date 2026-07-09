@@ -19,6 +19,13 @@ export const PRESETS = [
   { id: 'spotify', name: 'Spotify', price: 169, category: 'music', color: '#1DB954', letter: 'S', cancelUrl: 'https://www.spotify.com/account/subscription/', cancelHint: 'Аккаунт → Подписка' },
   { id: 'icloud', name: 'iCloud', price: 79, category: 'software', color: '#3693F3', letter: 'i', cancelUrl: 'https://appleid.apple.com', cancelHint: 'Настройки iPhone → Apple ID → Подписки' },
   { id: 'netflix', name: 'Netflix', price: 799, category: 'video', color: '#E50914', letter: 'N', cancelUrl: 'https://www.netflix.com/youraccount', cancelHint: 'Аккаунт → Управление подпиской' },
+  { id: 'kion', name: 'KION', price: 299, category: 'video', color: '#8C1EFF', letter: 'K', cancelUrl: 'https://kion.ru', cancelHint: 'Личный кабинет → Подписки' },
+  { id: 'amediateka', name: 'Amediateka', price: 399, category: 'video', color: '#A6192E', letter: 'A', cancelUrl: 'https://www.amediateka.ru', cancelHint: 'Личный кабинет → Подписка' },
+  { id: 'kaspersky-premium', name: 'Kaspersky Premium', price: 349, category: 'software', color: '#00A650', letter: 'K', cancelUrl: 'https://my.kaspersky.com', cancelHint: 'Мой Kaspersky → Подписки' },
+  { id: 'yandex-360', name: 'Яндекс 360', price: 199, category: 'software', color: '#FFCC00', letter: '3', cancelUrl: 'https://360.yandex.ru', cancelHint: 'Управление подпиской — в настройках Яндекс 360' },
+  { id: 'mybook', name: 'MyBook', price: 299, category: 'other', color: '#E63950', letter: 'M', cancelUrl: 'https://mybook.ru', cancelHint: 'Личный кабинет → Подписка' },
+  { id: 'google-one', name: 'Google One', price: 139, category: 'software', color: '#4285F4', letter: 'G', cancelUrl: 'https://one.google.com', cancelHint: 'Google One → Управление подпиской' },
+  { id: 'chatgpt-plus', name: 'ChatGPT Plus', price: 1999, category: 'software', color: '#10A37F', letter: 'C', cancelUrl: 'https://chatgpt.com', cancelHint: 'Settings → Subscription в приложении ChatGPT' },
 ];
 
 export function searchPresets(query) {
