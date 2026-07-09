@@ -29,6 +29,10 @@ export const PRESETS = [
   { id: 'vk-combo', name: 'VK Combo', price: 229, category: 'other', color: '#2787F5', letter: 'V', cancelUrl: 'https://vk.com', cancelHint: 'Настройки VK ID → Подписки → VK Combo' },
   { id: 'stepik', name: 'Stepik', price: 599, category: 'education', color: '#33BDB0', letter: 'S', cancelUrl: 'https://stepik.org', cancelHint: 'Личный кабинет → Подписка' },
   { id: 'mail-cloud', name: 'Облако Mail.ru', price: 199, category: 'software', color: '#005FF9', letter: 'О', cancelUrl: 'https://cloud.mail.ru', cancelHint: 'Настройки облака → Подписка' },
+  { id: 'claude-pro', name: 'Claude Pro', price: 1999, category: 'software', color: '#CC785C', letter: 'C', cancelUrl: 'https://claude.ai', cancelHint: 'Настройки → Billing на claude.ai' },
+  { id: 'github-copilot', name: 'GitHub Copilot', price: 999, category: 'software', color: '#8957E5', letter: 'G', cancelUrl: 'https://github.com/settings/copilot', cancelHint: 'Settings → Copilot' },
+  { id: 'midjourney', name: 'Midjourney', price: 999, category: 'software', color: '#4B0082', letter: 'M', cancelUrl: 'https://www.midjourney.com', cancelHint: 'Account → Subscription' },
+  { id: 'perplexity-pro', name: 'Perplexity Pro', price: 1999, category: 'software', color: '#20808D', letter: 'P', cancelUrl: 'https://www.perplexity.ai', cancelHint: 'Settings → Account → Subscription' },
 ];
 
 export function searchPresets(query) {
