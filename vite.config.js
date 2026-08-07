@@ -18,8 +18,11 @@ export default defineConfig({
         theme_color: '#6C5CE7',
         background_color: '#0F0F14',
         display: 'standalone',
+        orientation: 'portrait',
+        id: '/subscription-tracker/',
         start_url: '/subscription-tracker/',
         scope: '/subscription-tracker/',
+        categories: ['finance', 'productivity', 'utilities'],
         icons: [
           {
             src: 'pwa-192x192.png',
