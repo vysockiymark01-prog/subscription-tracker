@@ -18,6 +18,7 @@ export const PRESETS = [
   { id: 'youtube-premium', name: 'YouTube Premium', price: 399, category: 'video', color: '#FF0000', letter: 'Y', cancelUrl: 'https://www.youtube.com/paid_memberships', cancelHint: 'YouTube → Платные подписки' },
   { id: 'spotify', name: 'Spotify', price: 169, category: 'music', color: '#1DB954', letter: 'S', cancelUrl: 'https://www.spotify.com/account/subscription/', cancelHint: 'Аккаунт → Подписка' },
   { id: 'icloud', name: 'iCloud', price: 79, category: 'software', color: '#3693F3', letter: 'i', cancelUrl: 'https://appleid.apple.com', cancelHint: 'Настройки iPhone → Apple ID → Подписки' },
+  { id: 'apple-music', name: 'Apple Music', price: 229, category: 'music', color: '#FA233B', letter: 'A', cancelUrl: 'https://music.apple.com/account/subscriptions', cancelHint: 'Настройки iPhone → Apple ID → Подписки → Apple Music' },
   { id: 'netflix', name: 'Netflix', price: 799, category: 'video', color: '#E50914', letter: 'N', cancelUrl: 'https://www.netflix.com/youraccount', cancelHint: 'Аккаунт → Управление подпиской' },
   { id: 'kion', name: 'KION', price: 299, category: 'video', color: '#8C1EFF', letter: 'K', cancelUrl: 'https://kion.ru', cancelHint: 'Личный кабинет → Подписки' },
   { id: 'amediateka', name: 'Amediateka', price: 399, category: 'video', color: '#A6192E', letter: 'A', cancelUrl: 'https://www.amediateka.ru', cancelHint: 'Личный кабинет → Подписка' },
@@ -33,6 +34,26 @@ export const PRESETS = [
   { id: 'github-copilot', name: 'GitHub Copilot', price: 999, category: 'software', color: '#8957E5', letter: 'G', cancelUrl: 'https://github.com/settings/copilot', cancelHint: 'Settings → Copilot' },
   { id: 'midjourney', name: 'Midjourney', price: 999, category: 'software', color: '#4B0082', letter: 'M', cancelUrl: 'https://www.midjourney.com', cancelHint: 'Account → Subscription' },
   { id: 'perplexity-pro', name: 'Perplexity Pro', price: 1999, category: 'software', color: '#20808D', letter: 'P', cancelUrl: 'https://www.perplexity.ai', cancelHint: 'Settings → Account → Subscription' },
+
+  // Видео
+  { id: 'apple-tv-plus', name: 'Apple TV+', price: 299, category: 'video', color: '#000000', letter: 'A', cancelUrl: 'https://tv.apple.com', cancelHint: 'Настройки iPhone → Apple ID → Подписки → Apple TV+' },
+  { id: 'amazon-prime', name: 'Amazon Prime Video', price: 699, category: 'video', color: '#00A8E1', letter: 'A', cancelUrl: 'https://www.primevideo.com', cancelHint: 'Аккаунт Amazon → Управление подпиской Prime' },
+  { id: 'disney-plus', name: 'Disney+', price: 599, category: 'video', color: '#113CCF', letter: 'D', cancelUrl: 'https://www.disneyplus.com/account', cancelHint: 'Аккаунт Disney+ → Управление подпиской' },
+
+  // Музыка
+  { id: 'yandex-music', name: 'Яндекс Музыка', price: 299, category: 'music', color: '#FFCC00', letter: 'Я', cancelUrl: 'https://music.yandex.ru', cancelHint: 'Настройки аккаунта Яндекс → Музыка' },
+  { id: 'zvuk', name: 'Zvuk', price: 199, category: 'music', color: '#FFE800', letter: 'Z', cancelUrl: 'https://zvuk.com', cancelHint: 'Личный кабинет → Подписка' },
+
+  // Игры
+  { id: 'ps-plus', name: 'PlayStation Plus', price: 699, category: 'games', color: '#003791', letter: 'P', cancelUrl: 'https://www.playstation.com/subscriptions', cancelHint: 'Аккаунт PlayStation → Управление подпиской' },
+  { id: 'xbox-game-pass', name: 'Xbox Game Pass', price: 699, category: 'games', color: '#107C10', letter: 'X', cancelUrl: 'https://www.xbox.com/account', cancelHint: 'Аккаунт Microsoft → Службы и подписки' },
+  { id: 'discord-nitro', name: 'Discord Nitro', price: 399, category: 'games', color: '#5865F2', letter: 'D', cancelUrl: 'https://discord.com/settings/subscriptions', cancelHint: 'Настройки Discord → Подписки' },
+
+  // Софт и образование
+  { id: 'notion', name: 'Notion', price: 799, category: 'software', color: '#000000', letter: 'N', cancelUrl: 'https://www.notion.so/my-integrations', cancelHint: 'Settings & Members → Billing' },
+  { id: 'adobe-cc', name: 'Adobe Creative Cloud', price: 2999, category: 'software', color: '#FF0000', letter: 'A', cancelUrl: 'https://account.adobe.com', cancelHint: 'Adobe Account → Планы и оплата' },
+  { id: 'canva-pro', name: 'Canva Pro', price: 999, category: 'software', color: '#00C4CC', letter: 'C', cancelUrl: 'https://www.canva.com/settings/billing', cancelHint: 'Настройки аккаунта Canva → Billing' },
+  { id: 'skillbox', name: 'Skillbox', price: 2999, category: 'education', color: '#7B61FF', letter: 'S', cancelUrl: 'https://skillbox.ru', cancelHint: 'Личный кабинет → Мои курсы → Подписка' },
 ];
 
 export function searchPresets(query) {

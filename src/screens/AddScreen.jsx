@@ -43,10 +43,14 @@ export default function AddScreen({ onClose }) {
   const { notifyFirstSubscriptionAdded } = useNotifications();
   const [step, setStep] = useState('catalog');
   const [query, setQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('all');
   const [selectedPreset, setSelectedPreset] = useState(null);
   const [form, setForm] = useState(emptyForm());
 
-  const results = useMemo(() => searchPresets(query), [query]);
+  const results = useMemo(() => {
+    const bySearch = searchPresets(query);
+    return activeCategory === 'all' ? bySearch : bySearch.filter((p) => p.category === activeCategory);
+  }, [query, activeCategory]);
 
   function openPreset(preset) {
     setSelectedPreset(preset);
@@ -115,6 +119,23 @@ export default function AddScreen({ onClose }) {
           <button className="btn btn--secondary btn--block" onClick={openCustom}>
             Своя подписка
           </button>
+          <div className="category-tabs">
+            <button
+              className={`category-tabs__item${activeCategory === 'all' ? ' category-tabs__item--active' : ''}`}
+              onClick={() => setActiveCategory('all')}
+            >
+              Все
+            </button>
+            {CATEGORIES.map((c) => (
+              <button
+                key={c}
+                className={`category-tabs__item${activeCategory === c ? ' category-tabs__item--active' : ''}`}
+                onClick={() => setActiveCategory(c)}
+              >
+                {CATEGORY_LABEL[c]}
+              </button>
+            ))}
+          </div>
           <div className="preset-grid">
             {results.map((preset) => (
               <button key={preset.id} className="preset-grid__item" onClick={() => openPreset(preset)}>
