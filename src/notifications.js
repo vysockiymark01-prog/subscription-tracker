@@ -1,5 +1,5 @@
 import { daysUntil } from './utils/dates.js';
-import { formatRub } from './utils/money.js';
+import { formatMoney } from './utils/money.js';
 
 export function isSupported() {
   return typeof Notification !== 'undefined';
@@ -44,7 +44,7 @@ export function checkAndNotify(subscriptions) {
     const daysToPayment = daysUntil(s.nextPaymentDate);
     if (daysToPayment === s.reminderDays) {
       showNotification('Скоро списание', {
-        body: `${s.name}: ${formatRub(s.price)} через ${daysToPayment} дн.`,
+        body: `${s.name}: ${formatMoney(s.price, s.currency)} через ${daysToPayment} дн.`,
         tag: `payment-${s.id}-${s.nextPaymentDate}`,
       });
     }

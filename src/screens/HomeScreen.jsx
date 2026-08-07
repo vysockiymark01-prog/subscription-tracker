@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import SubscriptionCard from '../components/SubscriptionCard.jsx';
 import NotificationBadge from '../components/NotificationBadge.jsx';
-import { toMonthly, toAnnual, formatRub, splitPrice } from '../utils/money.js';
+import { toMonthly, toAnnual, formatMoney, splitPrice } from '../utils/money.js';
 
 export default function HomeScreen({ onAdd, onOpenDetail }) {
   const { activeSubscriptions } = useAppData();
@@ -12,14 +12,23 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
     [activeSubscriptions],
   );
 
-  const monthlyTotal = useMemo(
-    () => sorted.reduce((sum, s) => sum + toMonthly(splitPrice(s), s.period), 0),
-    [sorted],
-  );
-  const annualTotal = useMemo(
-    () => sorted.reduce((sum, s) => sum + toAnnual(splitPrice(s), s.period), 0),
-    [sorted],
-  );
+  // Суммы считаются отдельно по каждой валюте — конвертации нет, складывать их напрямую нельзя.
+  const monthlyTotalsByCurrency = useMemo(() => {
+    const totals = {};
+    for (const s of sorted) {
+      const code = s.currency ?? 'RUB';
+      totals[code] = (totals[code] ?? 0) + toMonthly(splitPrice(s), s.period);
+    }
+    return Object.entries(totals);
+  }, [sorted]);
+  const annualTotalsByCurrency = useMemo(() => {
+    const totals = {};
+    for (const s of sorted) {
+      const code = s.currency ?? 'RUB';
+      totals[code] = (totals[code] ?? 0) + toAnnual(splitPrice(s), s.period);
+    }
+    return Object.entries(totals);
+  }, [sorted]);
 
   if (sorted.length === 0) {
     return (
@@ -41,11 +50,15 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
       <div className="home-totals">
         <div className="home-totals__item">
           <div className="home-totals__label">В месяц</div>
-          <div className="home-totals__value">{formatRub(monthlyTotal)}</div>
+          <div className="home-totals__value">
+            {monthlyTotalsByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')}
+          </div>
         </div>
         <div className="home-totals__item">
           <div className="home-totals__label">В год</div>
-          <div className="home-totals__value">{formatRub(annualTotal)}</div>
+          <div className="home-totals__value">
+            {annualTotalsByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')}
+          </div>
         </div>
       </div>
 

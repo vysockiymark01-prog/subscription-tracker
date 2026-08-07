@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { CATEGORIES } from '../storage.js';
-import { toMonthly, toAnnual, formatRub, splitPrice } from '../utils/money.js';
+import { toMonthly, toAnnual, formatMoney, splitPrice } from '../utils/money.js';
 
 const CATEGORY_LABEL = {
   video: 'Видео',
@@ -15,12 +15,18 @@ const CATEGORY_LABEL = {
 export default function StatsScreen() {
   const { activeSubscriptions } = useAppData();
 
+  // Группируем по категории и валюте отдельно — суммы в разных валютах не складываются напрямую.
   const byCategory = useMemo(() => {
-    const totals = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
+    const totals = {};
     for (const s of activeSubscriptions) {
-      totals[s.category] += toMonthly(splitPrice(s), s.period);
+      const code = s.currency ?? 'RUB';
+      const key = `${s.category}__${code}`;
+      if (!totals[key]) totals[key] = { category: s.category, currency: code, total: 0 };
+      totals[key].total += toMonthly(splitPrice(s), s.period);
     }
-    return CATEGORIES.map((c) => ({ category: c, total: totals[c] })).filter((c) => c.total > 0);
+    return CATEGORIES.flatMap((c) =>
+      Object.values(totals).filter((t) => t.category === c),
+    );
   }, [activeSubscriptions]);
 
   const maxCategoryTotal = useMemo(() => Math.max(1, ...byCategory.map((c) => c.total)), [byCategory]);
@@ -49,11 +55,11 @@ export default function StatsScreen() {
       <section className="stats-section">
         <h2>По категориям, в месяц</h2>
         <div className="category-bars">
-          {byCategory.map(({ category, total }) => (
-            <div key={category} className="category-bar">
+          {byCategory.map(({ category, currency, total }) => (
+            <div key={`${category}-${currency}`} className="category-bar">
               <div className="category-bar__label">
                 <span>{CATEGORY_LABEL[category]}</span>
-                <span>{formatRub(total)}</span>
+                <span>{formatMoney(total, currency)}</span>
               </div>
               <div className="category-bar__track">
                 <div
@@ -72,7 +78,7 @@ export default function StatsScreen() {
           {top3.map((s) => (
             <li key={s.id} className="top-list__item">
               <span>{s.name}</span>
-              <span>{formatRub(toAnnual(splitPrice(s), s.period))}</span>
+              <span>{formatMoney(toAnnual(splitPrice(s), s.period), s.currency)}</span>
             </li>
           ))}
         </ol>

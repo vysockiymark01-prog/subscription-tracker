@@ -36,6 +36,7 @@ function parseCsvRows(text) {
 const HEADER_ALIASES = {
   name: ['name', 'название', 'имя'],
   price: ['price', 'цена', 'стоимость'],
+  currency: ['currency', 'валюта'],
   period: ['period', 'период'],
   category: ['category', 'категория'],
   nextpaymentdate: ['nextpaymentdate', 'next_payment_date', 'дата', 'датасписания'],
@@ -79,6 +80,7 @@ export function parseSubscriptionsCsv(text) {
     .map((row) => ({
       name: row[columnMap.name]?.trim() ?? '',
       price: Number(row[columnMap.price]),
+      currency: row[columnMap.currency]?.trim().toUpperCase() || 'RUB',
       period: row[columnMap.period]?.trim().toLowerCase() || 'month',
       category: row[columnMap.category]?.trim().toLowerCase() || 'other',
       nextPaymentDate: row[columnMap.nextpaymentdate]?.trim() ?? '',

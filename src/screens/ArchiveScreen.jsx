@@ -2,17 +2,21 @@ import { useMemo } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import PresetIcon from '../components/PresetIcon.jsx';
 import { getIconFor } from '../data/presets.js';
-import { toAnnual, formatRub } from '../utils/money.js';
+import { toAnnual, formatMoney } from '../utils/money.js';
 
 const PERIOD_LABEL = { week: 'нед', month: 'мес', quarter: 'кв', year: 'год' };
 
 export default function ArchiveScreen({ onOpenDetail }) {
   const { cancelledSubscriptions, pausedSubscriptions, restoreSubscription, resumeSubscription } = useAppData();
 
-  const savedPerYear = useMemo(
-    () => cancelledSubscriptions.reduce((sum, s) => sum + toAnnual(s.price, s.period), 0),
-    [cancelledSubscriptions],
-  );
+  const savedPerYearByCurrency = useMemo(() => {
+    const totals = {};
+    for (const s of cancelledSubscriptions) {
+      const code = s.currency ?? 'RUB';
+      totals[code] = (totals[code] ?? 0) + toAnnual(s.price, s.period);
+    }
+    return Object.entries(totals);
+  }, [cancelledSubscriptions]);
 
   if (cancelledSubscriptions.length === 0 && pausedSubscriptions.length === 0) {
     return (
@@ -30,7 +34,9 @@ export default function ArchiveScreen({ onOpenDetail }) {
       {cancelledSubscriptions.length > 0 && (
         <div className="archive-savings">
           <div className="archive-savings__label">Ты экономишь</div>
-          <div className="archive-savings__value">{formatRub(savedPerYear)} в год</div>
+          <div className="archive-savings__value">
+            {savedPerYearByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')} в год
+          </div>
         </div>
       )}
 
@@ -47,7 +53,7 @@ export default function ArchiveScreen({ onOpenDetail }) {
                     <div className="subscription-card__info">
                       <div className="subscription-card__name">{s.name}</div>
                       <div className="subscription-card__meta">
-                        {formatRub(s.price)} / {PERIOD_LABEL[s.period]}
+                        {formatMoney(s.price, s.currency)} / {PERIOD_LABEL[s.period]}
                       </div>
                     </div>
                   </button>
@@ -74,7 +80,7 @@ export default function ArchiveScreen({ onOpenDetail }) {
                     <div className="subscription-card__info">
                       <div className="subscription-card__name">{s.name}</div>
                       <div className="subscription-card__meta">
-                        {formatRub(s.price)} / {PERIOD_LABEL[s.period]}
+                        {formatMoney(s.price, s.currency)} / {PERIOD_LABEL[s.period]}
                       </div>
                     </div>
                   </button>

@@ -3,7 +3,7 @@ import { useAppData } from '../context/AppDataContext.jsx';
 import { CATEGORIES, PERIODS, REMINDER_OPTIONS } from '../storage.js';
 import PresetIcon from '../components/PresetIcon.jsx';
 import { getIconFor, getPresetById } from '../data/presets.js';
-import { formatRub, splitPrice } from '../utils/money.js';
+import { formatMoney, splitPrice, CURRENCIES } from '../utils/money.js';
 import { buildSubscriptionIcs } from '../utils/ics.js';
 
 const CATEGORY_LABEL = {
@@ -65,6 +65,7 @@ export default function DetailScreen({ id, onClose }) {
     updateSubscription(id, {
       name: form.name.trim(),
       price: Number(form.price),
+      currency: form.currency,
       category: form.category,
       period: form.period,
       nextPaymentDate: form.nextPaymentDate,
@@ -144,7 +145,7 @@ export default function DetailScreen({ id, onClose }) {
 
         <div className="form-row">
           <label>
-            Цена, ₽
+            Цена
             <input
               className="input"
               type="number"
@@ -156,23 +157,34 @@ export default function DetailScreen({ id, onClose }) {
             />
           </label>
           <label>
-            Период
-            <select className="input" value={form.period} onChange={(e) => setField('period', e.target.value)}>
-              {PERIODS.map((p) => (
-                <option key={p} value={p}>
-                  {PERIOD_LABEL[p]}
+            Валюта
+            <select className="input" value={form.currency ?? 'RUB'} onChange={(e) => setField('currency', e.target.value)}>
+              {CURRENCIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.symbol} {c.code}
                 </option>
               ))}
             </select>
           </label>
         </div>
 
+        <label>
+          Период
+          <select className="input" value={form.period} onChange={(e) => setField('period', e.target.value)}>
+            {PERIODS.map((p) => (
+              <option key={p} value={p}>
+                {PERIOD_LABEL[p]}
+              </option>
+            ))}
+          </select>
+        </label>
+
         {priceHistory.length > 1 && (
           <p className="price-history-hint">
             {priceDiff > 0
-              ? `Цена выросла на ${formatRub(priceDiff)} с момента добавления (${formatRub(firstPrice)} → ${formatRub(subscription.price)})`
+              ? `Цена выросла на ${formatMoney(priceDiff, subscription.currency)} с момента добавления (${formatMoney(firstPrice, subscription.currency)} → ${formatMoney(subscription.price, subscription.currency)})`
               : priceDiff < 0
-                ? `Цена снизилась на ${formatRub(Math.abs(priceDiff))} с момента добавления`
+                ? `Цена снизилась на ${formatMoney(Math.abs(priceDiff), subscription.currency)} с момента добавления`
                 : 'Цена не менялась с момента добавления'}
           </p>
         )}
@@ -211,7 +223,13 @@ export default function DetailScreen({ id, onClose }) {
           />
         </label>
         {Number(form.splitCount) > 1 && (
-          <p className="price-history-hint">Ваша доля: {formatRub(splitPrice({ ...subscription, price: Number(form.price), splitCount: Number(form.splitCount) }))}</p>
+          <p className="price-history-hint">
+            Ваша доля:{' '}
+            {formatMoney(
+              splitPrice({ ...subscription, price: Number(form.price), splitCount: Number(form.splitCount) }),
+              form.currency,
+            )}
+          </p>
         )}
 
         <label className="toggle-row">

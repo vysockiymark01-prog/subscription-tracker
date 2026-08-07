@@ -4,6 +4,7 @@ import { useNotifications } from '../context/NotificationsContext.jsx';
 import { searchPresets } from '../data/presets.js';
 import { CATEGORIES, PERIODS, REMINDER_OPTIONS } from '../storage.js';
 import { todayISO } from '../utils/dates.js';
+import { CURRENCIES } from '../utils/money.js';
 import PresetIcon from '../components/PresetIcon.jsx';
 
 const CATEGORY_LABEL = {
@@ -26,6 +27,7 @@ function emptyForm() {
   return {
     name: '',
     price: '',
+    currency: 'RUB',
     category: 'other',
     period: 'month',
     nextPaymentDate: todayISO(),
@@ -73,6 +75,7 @@ export default function AddScreen({ onClose }) {
       price: Number(form.price),
       category: form.category,
       period: form.period,
+      currency: form.currency,
       nextPaymentDate: form.nextPaymentDate,
       isTrial: form.isTrial,
       trialEndDate: form.isTrial && form.trialEndDate ? form.trialEndDate : null,
@@ -139,7 +142,7 @@ export default function AddScreen({ onClose }) {
 
           <div className="form-row">
             <label>
-              Цена, ₽
+              Цена
               <input
                 className="input"
                 type="number"
@@ -151,16 +154,27 @@ export default function AddScreen({ onClose }) {
               />
             </label>
             <label>
-              Период
-              <select className="input" value={form.period} onChange={(e) => setField('period', e.target.value)}>
-                {PERIODS.map((p) => (
-                  <option key={p} value={p}>
-                    {PERIOD_LABEL[p]}
+              Валюта
+              <select className="input" value={form.currency} onChange={(e) => setField('currency', e.target.value)}>
+                {CURRENCIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.symbol} {c.code}
                   </option>
                 ))}
               </select>
             </label>
           </div>
+
+          <label>
+            Период
+            <select className="input" value={form.period} onChange={(e) => setField('period', e.target.value)}>
+              {PERIODS.map((p) => (
+                <option key={p} value={p}>
+                  {PERIOD_LABEL[p]}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <label>
             На скольких делится подписка

@@ -1,3 +1,5 @@
+import { getCurrency } from './money.js';
+
 function escapeIcsText(text) {
   return String(text)
     .replace(/\\/g, '\\\\')
@@ -29,7 +31,9 @@ export function buildSubscriptionIcs(subscription) {
   const dtstart = toIcsDate(subscription.nextPaymentDate);
   const freq = RRULE_FREQ[subscription.period] ?? 'MONTHLY';
   const summary = escapeIcsText(`Списание: ${subscription.name}`);
-  const description = escapeIcsText(`${subscription.price} ₽ — Трекер подписок`);
+  const description = escapeIcsText(
+    `${subscription.price} ${getCurrency(subscription.currency).symbol} — Трекер подписок`,
+  );
   const uid = `${subscription.id}@subscription-tracker`;
   const alarmDays = subscription.reminderDays > 0 ? subscription.reminderDays : 3;
 
