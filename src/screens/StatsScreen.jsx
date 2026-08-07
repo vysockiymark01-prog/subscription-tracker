@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
 import { CATEGORIES } from '../storage.js';
-import { toMonthly, toAnnual, formatMoney, splitPrice } from '../utils/money.js';
+import { getIconFor } from '../data/presets.js';
+import { toMonthly, formatMoney, splitPrice } from '../utils/money.js';
 
 const CATEGORY_LABEL = {
   video: 'Видео',
@@ -37,19 +38,26 @@ export default function StatsScreen({ onOpenYearReview }) {
 
   const maxCategoryTotal = useMemo(() => Math.max(1, ...byCategory.map((c) => c.total)), [byCategory]);
 
-  const top3 = useMemo(
-    () =>
-      [...activeSubscriptions]
-        .sort((a, b) => {
-          const annualA = toAnnual(splitPrice(a), a.period);
-          const annualB = toAnnual(splitPrice(b), b.period);
-          const convertedA = convert(annualA, a.currency ?? 'RUB') ?? annualA;
-          const convertedB = convert(annualB, b.currency ?? 'RUB') ?? annualB;
-          return convertedB - convertedA;
-        })
-        .slice(0, 3),
-    [activeSubscriptions, convert],
-  );
+  // Все подписки, отсортированные по стоимости в месяц (по убыванию) — данные для графика.
+  // Если доступна конвертация в выбранную валюту, сортируем и сравниваем по ней честно,
+  // иначе — по значению в собственной валюте подписки (как и раньше для «топ-3»).
+  const costRanking = useMemo(() => {
+    return [...activeSubscriptions]
+      .map((s) => {
+        const monthly = toMonthly(splitPrice(s), s.period);
+        const converted = convert(monthly, s.currency ?? 'RUB');
+        return {
+          id: s.id,
+          name: s.name,
+          amount: converted ?? monthly,
+          currency: converted !== null ? displayCurrency : (s.currency ?? 'RUB'),
+          color: getIconFor(s).color,
+        };
+      })
+      .sort((a, b) => b.amount - a.amount);
+  }, [activeSubscriptions, convert, displayCurrency]);
+
+  const maxCost = useMemo(() => Math.max(1, ...costRanking.map((r) => r.amount)), [costRanking]);
 
   if (activeSubscriptions.length === 0) {
     return (
@@ -89,15 +97,23 @@ export default function StatsScreen({ onOpenYearReview }) {
       </section>
 
       <section className="stats-section">
-        <h2>Топ-3 самых дорогих в год</h2>
-        <ol className="top-list">
-          {top3.map((s) => (
-            <li key={s.id} className="top-list__item">
-              <span>{s.name}</span>
-              <span>{formatMoney(toAnnual(splitPrice(s), s.period), s.currency)}</span>
-            </li>
+        <h2>Подписки по стоимости, в месяц</h2>
+        <div className="category-bars">
+          {costRanking.map((r) => (
+            <div key={r.id} className="category-bar">
+              <div className="category-bar__label">
+                <span>{r.name}</span>
+                <span>{formatMoney(r.amount, r.currency)}</span>
+              </div>
+              <div className="category-bar__track">
+                <div
+                  className="category-bar__fill"
+                  style={{ width: `${(r.amount / maxCost) * 100}%`, background: r.color }}
+                />
+              </div>
+            </div>
           ))}
-        </ol>
+        </div>
       </section>
     </div>
   );
