@@ -3,6 +3,7 @@ import './App.css';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { AppDataProvider } from './context/AppDataContext.jsx';
 import { NotificationsProvider } from './context/NotificationsContext.jsx';
+import { ExchangeRateProvider } from './context/ExchangeRateContext.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import NotificationPrimer from './components/NotificationPrimer.jsx';
 import HomeScreen from './screens/HomeScreen.jsx';
@@ -11,6 +12,7 @@ import ArchiveScreen from './screens/ArchiveScreen.jsx';
 import SettingsScreen from './screens/SettingsScreen.jsx';
 import AddScreen from './screens/AddScreen.jsx';
 import DetailScreen from './screens/DetailScreen.jsx';
+import YearReviewScreen from './screens/YearReviewScreen.jsx';
 
 function AppShell() {
   const [tab, setTab] = useState('home');
@@ -18,13 +20,14 @@ function AppShell() {
 
   const openAdd = () => setOverlay({ type: 'add' });
   const openDetail = (id) => setOverlay({ type: 'detail', id });
+  const openYearReview = () => setOverlay({ type: 'year-review' });
   const closeOverlay = () => setOverlay(null);
 
   return (
     <div className="app-shell">
       <main className="screen-area">
         {tab === 'home' && <HomeScreen onAdd={openAdd} onOpenDetail={openDetail} />}
-        {tab === 'stats' && <StatsScreen />}
+        {tab === 'stats' && <StatsScreen onOpenYearReview={openYearReview} />}
         {tab === 'archive' && <ArchiveScreen onOpenDetail={openDetail} />}
         {tab === 'settings' && <SettingsScreen />}
       </main>
@@ -33,6 +36,7 @@ function AppShell() {
 
       {overlay?.type === 'add' && <AddScreen onClose={closeOverlay} />}
       {overlay?.type === 'detail' && <DetailScreen id={overlay.id} onClose={closeOverlay} />}
+      {overlay?.type === 'year-review' && <YearReviewScreen onClose={closeOverlay} />}
 
       <NotificationPrimer />
     </div>
@@ -44,7 +48,9 @@ export default function App() {
     <ThemeProvider>
       <AppDataProvider>
         <NotificationsProvider>
-          <AppShell />
+          <ExchangeRateProvider>
+            <AppShell />
+          </ExchangeRateProvider>
         </NotificationsProvider>
       </AppDataProvider>
     </ThemeProvider>

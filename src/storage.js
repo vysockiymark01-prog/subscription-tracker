@@ -218,3 +218,22 @@ export function getThemePreference() {
 export function setThemePreference(theme) {
   localStorage.setItem(THEME_KEY, theme);
 }
+
+const DISPLAY_CURRENCY_KEY = 'display-currency-preference';
+
+/**
+ * 'grouped' — показывать итоги раздельно по валютам (поведение по умолчанию).
+ * Код валюты (например 'USD') — конвертировать и показывать общий итог в ней
+ * по курсу ЦБ РФ, если он доступен.
+ */
+export function getDisplayCurrencyPreference() {
+  try {
+    return localStorage.getItem(DISPLAY_CURRENCY_KEY) ?? 'grouped';
+  } catch {
+    return 'grouped';
+  }
+}
+
+export function setDisplayCurrencyPreference(value) {
+  localStorage.setItem(DISPLAY_CURRENCY_KEY, value);
+}

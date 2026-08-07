@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
+import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
 import { todayISO } from '../utils/dates.js';
+import { CURRENCIES } from '../utils/money.js';
 
 const THEME_OPTIONS = [
   { value: 'system', label: 'Системная' },
@@ -12,6 +14,7 @@ const THEME_OPTIONS = [
 export default function SettingsScreen() {
   const { theme, setTheme } = useTheme();
   const { exportData, importData, importCsv } = useAppData();
+  const { displayCurrency, setDisplayCurrency, status, ratesDate, refreshRates } = useExchangeRate();
   const fileInputRef = useRef(null);
   const [message, setMessage] = useState(null);
   const [showAbout, setShowAbout] = useState(false);
@@ -68,6 +71,37 @@ export default function SettingsScreen() {
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="settings-section">
+        <h2>Итоги в разных валютах</h2>
+        <p className="settings-hint">
+          Если подписки в разных валютах, можно показывать общий итог в одной — по курсу ЦБ РФ, — либо раздельно.
+        </p>
+        <select
+          className="input"
+          value={displayCurrency}
+          onChange={(e) => setDisplayCurrency(e.target.value)}
+        >
+          <option value="grouped">Раздельно по валютам</option>
+          {CURRENCIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              Всё в {c.symbol} {c.code}
+            </option>
+          ))}
+        </select>
+        {displayCurrency !== 'grouped' && (
+          <p className="settings-hint">
+            {status === 'loading' && 'Загружаю курс ЦБ РФ…'}
+            {status === 'ready' && ratesDate && `Курс на ${ratesDate.slice(0, 10)}. `}
+            {status === 'error' && 'Не удалось получить курс — итоги временно показываются раздельно. '}
+            {status !== 'loading' && (
+              <button className="settings-inline-link" onClick={refreshRates}>
+                Обновить курс
+              </button>
+            )}
+          </p>
+        )}
       </section>
 
       <section className="settings-section">

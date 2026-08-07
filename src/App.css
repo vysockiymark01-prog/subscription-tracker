@@ -604,3 +604,118 @@
 .archive-section-title:first-child {
   margin-top: 0;
 }
+
+/* --- Умные подсказки --- */
+
+.smart-tips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--accent-bg);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+}
+
+.smart-tips__item {
+  font-size: 13px;
+  color: var(--text-h);
+  line-height: 1.4;
+}
+
+.smart-tips__dismiss {
+  align-self: flex-end;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0;
+}
+
+/* --- Настройки: ссылка внутри строки --- */
+
+.settings-inline-link {
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 0;
+}
+
+/* --- Итог года --- */
+
+.year-review {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.year-review__card {
+  border-radius: 20px;
+  padding: 28px 22px;
+  background: linear-gradient(160deg, var(--accent) 0%, #2d1f8f 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
+}
+
+.year-review__year {
+  font-size: 15px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.year-review__title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.year-review__big-number {
+  font-size: 34px;
+  font-weight: 800;
+}
+
+.year-review__big-label {
+  font-size: 13px;
+  opacity: 0.85;
+  margin-bottom: 20px;
+}
+
+.year-review__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.year-review__stat-value {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.year-review__stat-label {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.year-review__highlight {
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 8px;
+}
+
+.year-review__footer {
+  margin-top: 18px;
+  font-size: 12px;
+  opacity: 0.7;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

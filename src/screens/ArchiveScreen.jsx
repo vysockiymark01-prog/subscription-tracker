@@ -1,13 +1,15 @@
 import { useMemo } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
+import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
 import PresetIcon from '../components/PresetIcon.jsx';
 import { getIconFor } from '../data/presets.js';
-import { toAnnual, formatMoney } from '../utils/money.js';
+import { toAnnual, formatMoney, sumConverted } from '../utils/money.js';
 
 const PERIOD_LABEL = { week: 'нед', month: 'мес', quarter: 'кв', year: 'год' };
 
 export default function ArchiveScreen({ onOpenDetail }) {
   const { cancelledSubscriptions, pausedSubscriptions, restoreSubscription, resumeSubscription } = useAppData();
+  const { convert, displayCurrency } = useExchangeRate();
 
   const savedPerYearByCurrency = useMemo(() => {
     const totals = {};
@@ -17,6 +19,10 @@ export default function ArchiveScreen({ onOpenDetail }) {
     }
     return Object.entries(totals);
   }, [cancelledSubscriptions]);
+  const savedPerYearConverted = useMemo(
+    () => sumConverted(savedPerYearByCurrency, convert),
+    [savedPerYearByCurrency, convert],
+  );
 
   if (cancelledSubscriptions.length === 0 && pausedSubscriptions.length === 0) {
     return (
@@ -35,7 +41,10 @@ export default function ArchiveScreen({ onOpenDetail }) {
         <div className="archive-savings">
           <div className="archive-savings__label">Ты экономишь</div>
           <div className="archive-savings__value">
-            {savedPerYearByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')} в год
+            {savedPerYearConverted !== null
+              ? formatMoney(savedPerYearConverted, displayCurrency)
+              : savedPerYearByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')}{' '}
+            в год
           </div>
         </div>
       )}

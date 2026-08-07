@@ -53,6 +53,23 @@ export function formatRub(amount) {
 }
 
 /**
+ * Пытается свести массив [[код_валюты, сумма], ...] к одному числу с помощью
+ * convert(amount, fromCode) из ExchangeRateContext. Если конвертация недоступна
+ * хотя бы для одной валюты (курс не загружен, валюта не поддерживается ЦБ и т.п.),
+ * возвращает null — вызывающий экран должен в этом случае показать суммы раздельно.
+ */
+export function sumConverted(totalsByCurrency, convert) {
+  if (totalsByCurrency.length === 0) return null;
+  let sum = 0;
+  for (const [code, amount] of totalsByCurrency) {
+    const converted = convert(amount, code);
+    if (converted === null) return null;
+    sum += converted;
+  }
+  return sum;
+}
+
+/**
  * Доля пользователя в стоимости подписки, если она разделена между
  * несколькими людьми (splitCount).
  */

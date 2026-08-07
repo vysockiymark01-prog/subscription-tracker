@@ -1,11 +1,14 @@
 import { useMemo } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
+import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
 import SubscriptionCard from '../components/SubscriptionCard.jsx';
 import NotificationBadge from '../components/NotificationBadge.jsx';
-import { toMonthly, toAnnual, formatMoney, splitPrice } from '../utils/money.js';
+import SmartTips from '../components/SmartTips.jsx';
+import { toMonthly, toAnnual, formatMoney, splitPrice, sumConverted } from '../utils/money.js';
 
 export default function HomeScreen({ onAdd, onOpenDetail }) {
   const { activeSubscriptions } = useAppData();
+  const { convert, displayCurrency } = useExchangeRate();
 
   const sorted = useMemo(
     () => [...activeSubscriptions].sort((a, b) => a.nextPaymentDate.localeCompare(b.nextPaymentDate)),
@@ -30,6 +33,12 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
     return Object.entries(totals);
   }, [sorted]);
 
+  // Если пользователь выбрал единую валюту отображения и курс ЦБ загружен — сводим
+  // итог к одному числу. Если конвертация недоступна (нет сети, "grouped" и т.п.) —
+  // молча остаёмся на раздельном показе по валютам.
+  const monthlyConverted = useMemo(() => sumConverted(monthlyTotalsByCurrency, convert), [monthlyTotalsByCurrency, convert]);
+  const annualConverted = useMemo(() => sumConverted(annualTotalsByCurrency, convert), [annualTotalsByCurrency, convert]);
+
   if (sorted.length === 0) {
     return (
       <div className="screen home-screen home-screen--empty">
@@ -51,16 +60,22 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
         <div className="home-totals__item">
           <div className="home-totals__label">В месяц</div>
           <div className="home-totals__value">
-            {monthlyTotalsByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')}
+            {monthlyConverted !== null
+              ? formatMoney(monthlyConverted, displayCurrency)
+              : monthlyTotalsByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')}
           </div>
         </div>
         <div className="home-totals__item">
           <div className="home-totals__label">В год</div>
           <div className="home-totals__value">
-            {annualTotalsByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')}
+            {annualConverted !== null
+              ? formatMoney(annualConverted, displayCurrency)
+              : annualTotalsByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')}
           </div>
         </div>
       </div>
+
+      <SmartTips subscriptions={sorted} />
 
       <div className="subscription-list">
         {sorted.map((s) => (
