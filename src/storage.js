@@ -58,6 +58,7 @@ export function createSubscription(fields) {
     pausedAt: null,
     reminderDays: 3,
     iconKey: null,
+    customColor: null,
     splitCount: 1,
     priceHistory: [],
     ...fields,
@@ -236,4 +237,136 @@ export function getDisplayCurrencyPreference() {
 
 export function setDisplayCurrencyPreference(value) {
   localStorage.setItem(DISPLAY_CURRENCY_KEY, value);
+}
+
+const LANGUAGE_KEY = 'language-preference';
+
+export function getLanguagePreference() {
+  try {
+    return localStorage.getItem(LANGUAGE_KEY) ?? 'ru';
+  } catch {
+    return 'ru';
+  }
+}
+
+export function setLanguagePreference(value) {
+  localStorage.setItem(LANGUAGE_KEY, value);
+}
+
+const BACKUP_REMINDER_KEY = 'backup-reminder-days'; // '0' — выключено, иначе число дней
+const LAST_EXPORT_KEY = 'last-export-at';
+
+export function getBackupReminderDays() {
+  try {
+    return Number(localStorage.getItem(BACKUP_REMINDER_KEY) ?? '0');
+  } catch {
+    return 0;
+  }
+}
+
+export function setBackupReminderDays(days) {
+  localStorage.setItem(BACKUP_REMINDER_KEY, String(days));
+}
+
+export function getLastExportAt() {
+  try {
+    return localStorage.getItem(LAST_EXPORT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setLastExportAt(isoString) {
+  try {
+    localStorage.setItem(LAST_EXPORT_KEY, isoString);
+  } catch {
+    // не критично
+  }
+}
+
+const LAST_BACKUP_NOTIF_KEY = 'last-backup-notif-at';
+
+export function getLastBackupNotifAt() {
+  try {
+    return localStorage.getItem(LAST_BACKUP_NOTIF_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setLastBackupNotifAt(isoDate) {
+  try {
+    localStorage.setItem(LAST_BACKUP_NOTIF_KEY, isoDate);
+  } catch {
+    // не критично
+  }
+}
+
+const APP_LOCK_KEY = 'app-lock-enabled';
+const PIN_HASH_KEY = 'app-pin-hash';
+const BIOMETRIC_KEY = 'app-lock-biometric';
+const ONBOARDING_KEY = 'onboarding-completed';
+
+export function isAppLockEnabled() {
+  try {
+    return localStorage.getItem(APP_LOCK_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function setAppLockEnabled(enabled) {
+  localStorage.setItem(APP_LOCK_KEY, enabled ? '1' : '0');
+}
+
+export function getPinHash() {
+  try {
+    return localStorage.getItem(PIN_HASH_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setPinHash(hash) {
+  if (hash) localStorage.setItem(PIN_HASH_KEY, hash);
+  else localStorage.removeItem(PIN_HASH_KEY);
+}
+
+export function isBiometricEnabled() {
+  try {
+    return localStorage.getItem(BIOMETRIC_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function setBiometricEnabled(enabled) {
+  localStorage.setItem(BIOMETRIC_KEY, enabled ? '1' : '0');
+}
+
+const BIOMETRIC_CREDENTIAL_KEY = 'app-lock-biometric-credential';
+
+export function getBiometricCredentialId() {
+  try {
+    return localStorage.getItem(BIOMETRIC_CREDENTIAL_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setBiometricCredentialId(id) {
+  if (id) localStorage.setItem(BIOMETRIC_CREDENTIAL_KEY, id);
+  else localStorage.removeItem(BIOMETRIC_CREDENTIAL_KEY);
+}
+
+export function isOnboardingCompleted() {
+  try {
+    return localStorage.getItem(ONBOARDING_KEY) === '1';
+  } catch {
+    return true;
+  }
+}
+
+export function setOnboardingCompleted() {
+  localStorage.setItem(ONBOARDING_KEY, '1');
 }

@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import * as notifications from '../notifications.js';
 import { useAppData } from './AppDataContext.jsx';
+import { useLanguage } from './LanguageContext.jsx';
 
 const NotificationsContext = createContext(null);
 
 export function NotificationsProvider({ children }) {
   const { activeSubscriptions } = useAppData();
+  const { language } = useLanguage();
   const [permission, setPermission] = useState(() => notifications.getPermission());
   const [showPrimer, setShowPrimer] = useState(false);
   const checkedOnce = useRef(false);
@@ -13,8 +15,8 @@ export function NotificationsProvider({ children }) {
   useEffect(() => {
     if (checkedOnce.current) return;
     checkedOnce.current = true;
-    notifications.checkAndNotify(activeSubscriptions);
-  }, [activeSubscriptions]);
+    notifications.checkAndNotify(activeSubscriptions, language);
+  }, [activeSubscriptions, language]);
 
   const requestPermission = useCallback(async () => {
     const result = await notifications.requestPermission();

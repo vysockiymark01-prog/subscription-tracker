@@ -50,3 +50,14 @@ export function getStaleSubscriptionTips(subscriptions, { staleDays = 180 } = {}
     return days >= staleDays && (s.priceHistory?.length ?? 0) === 1;
   });
 }
+
+/**
+ * Пора ли напомнить про бэкап: включено ли напоминание в настройках и прошло ли
+ * достаточно дней с последнего экспорта данных (или его вообще не было).
+ */
+export function shouldRemindBackup(reminderDays, lastExportAt) {
+  if (!reminderDays || reminderDays <= 0) return false;
+  if (!lastExportAt) return true;
+  const days = (Date.now() - new Date(lastExportAt).getTime()) / 86400000;
+  return days >= reminderDays;
+}

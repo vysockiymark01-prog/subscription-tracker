@@ -76,13 +76,21 @@ function hashColor(str) {
   return FALLBACK_COLORS[hash % FALLBACK_COLORS.length];
 }
 
+// Палитра для ручного выбора цвета иконки — как для пресетов, так и для своих подписок.
+export const ICON_COLORS = [
+  '#6C5CE7', '#00B894', '#0984E3', '#E17055', '#D63031', '#00CEC9', '#FDCB6E',
+  '#E84393', '#FF7675', '#00A650', '#FFCC00', '#8C1EFF', '#26A5E4', '#E30611',
+];
+
 /**
- * Возвращает {color, letter} для отображения иконки подписки:
- * по пресету, если он указан в iconKey, иначе — по первой букве названия.
+ * Возвращает {color, letter} для отображения иконки подписки: если пользователь
+ * задал свой цвет (customColor) — используем его; иначе по пресету, если он указан
+ * в iconKey; иначе цвет высчитывается по названию, а буква — из него же.
  */
 export function getIconFor(subscription) {
   const preset = subscription.iconKey ? getPresetById(subscription.iconKey) : null;
-  if (preset) return { color: preset.color, letter: preset.letter };
   const name = subscription.name || '?';
-  return { color: hashColor(name), letter: name.trim().charAt(0).toUpperCase() || '?' };
+  const letter = preset?.letter ?? name.trim().charAt(0).toUpperCase() ?? '?';
+  const color = subscription.customColor || preset?.color || hashColor(name);
+  return { color, letter };
 }

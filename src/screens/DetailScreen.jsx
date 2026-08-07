@@ -1,26 +1,12 @@
 import { useState } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import { CATEGORIES, PERIODS, REMINDER_OPTIONS } from '../storage.js';
 import PresetIcon from '../components/PresetIcon.jsx';
+import ColorPicker from '../components/ColorPicker.jsx';
 import { getIconFor, getPresetById } from '../data/presets.js';
 import { formatMoney, splitPrice, CURRENCIES } from '../utils/money.js';
 import { buildSubscriptionIcs } from '../utils/ics.js';
-
-const CATEGORY_LABEL = {
-  video: 'Видео',
-  music: 'Музыка',
-  software: 'Софт',
-  games: 'Игры',
-  education: 'Образование',
-  other: 'Другое',
-};
-
-const PERIOD_LABEL = {
-  week: 'Еженедельно',
-  month: 'Ежемесячно',
-  quarter: 'Ежеквартально',
-  year: 'Ежегодно',
-};
 
 export default function DetailScreen({ id, onClose }) {
   const {
@@ -32,6 +18,7 @@ export default function DetailScreen({ id, onClose }) {
     resumeSubscription,
     deleteSubscription,
   } = useAppData();
+  const { t } = useLanguage();
   const subscription = getById(id);
   const [form, setForm] = useState(subscription ? { ...subscription } : null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -41,8 +28,8 @@ export default function DetailScreen({ id, onClose }) {
       <div className="overlay-screen">
         <div className="overlay-header">
           <span />
-          <h2>Подписка не найдена</h2>
-          <button className="overlay-header__close" onClick={onClose} aria-label="Закрыть">
+          <h2>{t('detail.notFound')}</h2>
+          <button className="overlay-header__close" onClick={onClose} aria-label={t('common.close')}>
             ×
           </button>
         </div>
@@ -50,7 +37,7 @@ export default function DetailScreen({ id, onClose }) {
     );
   }
 
-  const icon = getIconFor(subscription);
+  const icon = getIconFor(form);
   const preset = subscription.iconKey ? getPresetById(subscription.iconKey) : null;
   const priceHistory = subscription.priceHistory ?? [];
   const firstPrice = priceHistory[0]?.price ?? subscription.price;
@@ -73,6 +60,7 @@ export default function DetailScreen({ id, onClose }) {
       trialEndDate: form.isTrial && form.trialEndDate ? form.trialEndDate : null,
       reminderDays: Number(form.reminderDays),
       splitCount: Number(form.splitCount) > 0 ? Number(form.splitCount) : 1,
+      customColor: form.customColor || null,
     });
     onClose();
   }
@@ -119,8 +107,8 @@ export default function DetailScreen({ id, onClose }) {
     <div className="overlay-screen">
       <div className="overlay-header">
         <span />
-        <h2>Подписка</h2>
-        <button className="overlay-header__close" onClick={onClose} aria-label="Закрыть">
+        <h2>{t('detail.title')}</h2>
+        <button className="overlay-header__close" onClick={onClose} aria-label={t('common.close')}>
           ×
         </button>
       </div>
@@ -129,11 +117,11 @@ export default function DetailScreen({ id, onClose }) {
         <PresetIcon color={icon.color} letter={icon.letter} size={56} />
       </div>
 
-      {subscription.status === 'paused' && <div className="status-banner">Подписка на паузе</div>}
+      {subscription.status === 'paused' && <div className="status-banner">{t('detail.paused')}</div>}
 
       <form className="subscription-form" onSubmit={handleSave}>
         <label>
-          Название
+          {t('add.name')}
           <input
             className="input"
             type="text"
@@ -143,9 +131,14 @@ export default function DetailScreen({ id, onClose }) {
           />
         </label>
 
+        <label>
+          {t('add.color')}
+          <ColorPicker value={form.customColor} onChange={(color) => setField('customColor', color)} />
+        </label>
+
         <div className="form-row">
           <label>
-            Цена
+            {t('add.price')}
             <input
               className="input"
               type="number"
@@ -157,7 +150,7 @@ export default function DetailScreen({ id, onClose }) {
             />
           </label>
           <label>
-            Валюта
+            {t('add.currency')}
             <select className="input" value={form.currency ?? 'RUB'} onChange={(e) => setField('currency', e.target.value)}>
               {CURRENCIES.map((c) => (
                 <option key={c.code} value={c.code}>
@@ -169,11 +162,11 @@ export default function DetailScreen({ id, onClose }) {
         </div>
 
         <label>
-          Период
+          {t('add.period')}
           <select className="input" value={form.period} onChange={(e) => setField('period', e.target.value)}>
             {PERIODS.map((p) => (
               <option key={p} value={p}>
-                {PERIOD_LABEL[p]}
+                {t(`period.${p}.full`)}
               </option>
             ))}
           </select>
@@ -182,26 +175,30 @@ export default function DetailScreen({ id, onClose }) {
         {priceHistory.length > 1 && (
           <p className="price-history-hint">
             {priceDiff > 0
-              ? `Цена выросла на ${formatMoney(priceDiff, subscription.currency)} с момента добавления (${formatMoney(firstPrice, subscription.currency)} → ${formatMoney(subscription.price, subscription.currency)})`
+              ? t('detail.priceUp', {
+                  diff: formatMoney(priceDiff, subscription.currency),
+                  from: formatMoney(firstPrice, subscription.currency),
+                  to: formatMoney(subscription.price, subscription.currency),
+                })
               : priceDiff < 0
-                ? `Цена снизилась на ${formatMoney(Math.abs(priceDiff), subscription.currency)} с момента добавления`
-                : 'Цена не менялась с момента добавления'}
+                ? t('detail.priceDown', { diff: formatMoney(Math.abs(priceDiff), subscription.currency) })
+                : t('detail.priceSame')}
           </p>
         )}
 
         <label>
-          Категория
+          {t('add.category')}
           <select className="input" value={form.category} onChange={(e) => setField('category', e.target.value)}>
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {CATEGORY_LABEL[c]}
+                {t(`category.${c}`)}
               </option>
             ))}
           </select>
         </label>
 
         <label>
-          Дата следующего списания
+          {t('add.nextPayment')}
           <input
             className="input"
             type="date"
@@ -212,7 +209,7 @@ export default function DetailScreen({ id, onClose }) {
         </label>
 
         <label>
-          На скольких делится подписка
+          {t('add.split')}
           <input
             className="input"
             type="number"
@@ -224,7 +221,7 @@ export default function DetailScreen({ id, onClose }) {
         </label>
         {Number(form.splitCount) > 1 && (
           <p className="price-history-hint">
-            Ваша доля:{' '}
+            {t('detail.yourShare')}{' '}
             {formatMoney(
               splitPrice({ ...subscription, price: Number(form.price), splitCount: Number(form.splitCount) }),
               form.currency,
@@ -233,13 +230,13 @@ export default function DetailScreen({ id, onClose }) {
         )}
 
         <label className="toggle-row">
-          <span>Пробный период</span>
+          <span>{t('add.trial')}</span>
           <input type="checkbox" checked={form.isTrial} onChange={(e) => setField('isTrial', e.target.checked)} />
         </label>
 
         {form.isTrial && (
           <label>
-            Дата окончания триала
+            {t('add.trialEnd')}
             <input
               className="input"
               type="date"
@@ -250,7 +247,7 @@ export default function DetailScreen({ id, onClose }) {
         )}
 
         <label>
-          Напомнить за
+          {t('add.remind')}
           <select
             className="input"
             value={form.reminderDays}
@@ -258,62 +255,62 @@ export default function DetailScreen({ id, onClose }) {
           >
             {REMINDER_OPTIONS.map((d) => (
               <option key={d} value={d}>
-                {d} {d === 1 ? 'день' : 'дня'}
+                {d} {t('unit.daysShort')}
               </option>
             ))}
           </select>
         </label>
 
         <button className="btn btn--primary btn--block" type="submit" disabled={!isValid}>
-          Сохранить
+          {t('detail.save')}
         </button>
       </form>
 
       <div className="detail-actions">
         <button className="btn btn--secondary btn--block" onClick={handleAddToCalendar}>
-          Добавить в календарь
+          {t('detail.addToCalendar')}
         </button>
 
         {preset?.cancelUrl && (
           <a className="btn btn--secondary btn--block cancel-hint-link" href={preset.cancelUrl} target="_blank" rel="noreferrer">
-            Как отменить: {preset.cancelHint}
+            {t('detail.cancelHintPrefix')} {preset.cancelHint}
           </a>
         )}
 
         {subscription.status === 'active' && (
           <>
             <button className="btn btn--secondary btn--block" onClick={handlePause}>
-              Поставить на паузу
+              {t('detail.pause')}
             </button>
             <button className="btn btn--secondary btn--block" onClick={handleCancelSubscription}>
-              Отменил подписку
+              {t('detail.cancelSub')}
             </button>
           </>
         )}
         {subscription.status === 'paused' && (
           <button className="btn btn--secondary btn--block" onClick={handleResume}>
-            Возобновить
+            {t('detail.resume')}
           </button>
         )}
         {subscription.status === 'cancelled' && (
           <button className="btn btn--secondary btn--block" onClick={handleRestore}>
-            Вернуть в активные
+            {t('detail.restore')}
           </button>
         )}
 
         {!confirmingDelete ? (
           <button className="btn btn--danger btn--block" onClick={() => setConfirmingDelete(true)}>
-            Удалить
+            {t('detail.delete')}
           </button>
         ) : (
           <div className="confirm-delete">
-            <p>Удалить подписку без возможности восстановления?</p>
+            <p>{t('detail.deleteConfirm')}</p>
             <div className="confirm-delete__actions">
               <button className="btn btn--secondary" onClick={() => setConfirmingDelete(false)}>
-                Отмена
+                {t('common.cancel')}
               </button>
               <button className="btn btn--danger" onClick={handleDelete}>
-                Да, удалить
+                {t('detail.deleteYes')}
               </button>
             </div>
           </div>

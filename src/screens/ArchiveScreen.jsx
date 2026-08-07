@@ -1,15 +1,15 @@
 import { useMemo } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import PresetIcon from '../components/PresetIcon.jsx';
 import { getIconFor } from '../data/presets.js';
 import { toAnnual, formatMoney, sumConverted } from '../utils/money.js';
 
-const PERIOD_LABEL = { week: 'нед', month: 'мес', quarter: 'кв', year: 'год' };
-
 export default function ArchiveScreen({ onOpenDetail }) {
   const { cancelledSubscriptions, pausedSubscriptions, restoreSubscription, resumeSubscription } = useAppData();
   const { convert, displayCurrency } = useExchangeRate();
+  const { t } = useLanguage();
 
   const savedPerYearByCurrency = useMemo(() => {
     const totals = {};
@@ -28,8 +28,8 @@ export default function ArchiveScreen({ onOpenDetail }) {
     return (
       <div className="screen archive-screen archive-screen--empty">
         <div className="empty-state">
-          <h2>Архив пуст</h2>
-          <p>Здесь появятся отменённые и приостановленные подписки</p>
+          <h2>{t('archive.empty.title')}</h2>
+          <p>{t('archive.empty.text')}</p>
         </div>
       </div>
     );
@@ -39,19 +39,19 @@ export default function ArchiveScreen({ onOpenDetail }) {
     <div className="screen archive-screen">
       {cancelledSubscriptions.length > 0 && (
         <div className="archive-savings">
-          <div className="archive-savings__label">Ты экономишь</div>
+          <div className="archive-savings__label">{t('archive.savings')}</div>
           <div className="archive-savings__value">
             {savedPerYearConverted !== null
               ? formatMoney(savedPerYearConverted, displayCurrency)
               : savedPerYearByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')}{' '}
-            в год
+            {t('archive.perYear')}
           </div>
         </div>
       )}
 
       {pausedSubscriptions.length > 0 && (
         <>
-          <h2 className="archive-section-title">На паузе</h2>
+          <h2 className="archive-section-title">{t('archive.paused')}</h2>
           <div className="subscription-list">
             {pausedSubscriptions.map((s) => {
               const icon = getIconFor(s);
@@ -62,12 +62,12 @@ export default function ArchiveScreen({ onOpenDetail }) {
                     <div className="subscription-card__info">
                       <div className="subscription-card__name">{s.name}</div>
                       <div className="subscription-card__meta">
-                        {formatMoney(s.price, s.currency)} / {PERIOD_LABEL[s.period]}
+                        {formatMoney(s.price, s.currency)} / {t(`period.${s.period}.short`)}
                       </div>
                     </div>
                   </button>
                   <button className="btn btn--secondary" onClick={() => resumeSubscription(s.id)}>
-                    Возобновить
+                    {t('archive.resume')}
                   </button>
                 </div>
               );
@@ -78,7 +78,7 @@ export default function ArchiveScreen({ onOpenDetail }) {
 
       {cancelledSubscriptions.length > 0 && (
         <>
-          <h2 className="archive-section-title">Отменённые</h2>
+          <h2 className="archive-section-title">{t('archive.cancelled')}</h2>
           <div className="subscription-list">
             {cancelledSubscriptions.map((s) => {
               const icon = getIconFor(s);
@@ -89,12 +89,12 @@ export default function ArchiveScreen({ onOpenDetail }) {
                     <div className="subscription-card__info">
                       <div className="subscription-card__name">{s.name}</div>
                       <div className="subscription-card__meta">
-                        {formatMoney(s.price, s.currency)} / {PERIOD_LABEL[s.period]}
+                        {formatMoney(s.price, s.currency)} / {t(`period.${s.period}.short`)}
                       </div>
                     </div>
                   </button>
                   <button className="btn btn--secondary" onClick={() => restoreSubscription(s.id)}>
-                    Вернуть
+                    {t('archive.restore')}
                   </button>
                 </div>
               );

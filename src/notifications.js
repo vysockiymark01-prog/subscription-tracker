@@ -1,5 +1,8 @@
-import { daysUntil } from './utils/dates.js';
+import { daysUntil, todayISO } from './utils/dates.js';
 import { formatMoney } from './utils/money.js';
+import { LOCALES, DEFAULT_LOCALE, interpolate } from './i18n/index.js';
+import * as storage from './storage.js';
+import { shouldRemindBackup } from './utils/insights.js';
 
 export function isSupported() {
   return typeof Notification !== 'undefined';
@@ -12,6 +15,11 @@ export function getPermission() {
 export async function requestPermission() {
   if (!isSupported()) return 'unsupported';
   return Notification.requestPermission();
+}
+
+function tFor(language) {
+  const dict = LOCALES[language] ?? LOCALES[DEFAULT_LOCALE];
+  return (key, vars) => interpolate(dict[key] ?? LOCALES[DEFAULT_LOCALE][key] ?? key, vars);
 }
 
 async function showNotification(title, options) {
@@ -32,19 +40,20 @@ async function showNotification(title, options) {
 
 /**
  * Проверяет список активных подписок и показывает локальные уведомления
- * о приближающихся списаниях и окончании пробных периодов.
- * Вызывается один раз при открытии приложения.
+ * о приближающихся списаниях, окончании пробных периодов и — если пора —
+ * напоминание сделать бэкап данных. Вызывается один раз при открытии приложения.
  */
-export function checkAndNotify(subscriptions) {
+export function checkAndNotify(subscriptions, language = 'ru') {
   if (getPermission() !== 'granted') return;
+  const t = tFor(language);
 
   for (const s of subscriptions) {
     if (s.status !== 'active') continue;
 
     const daysToPayment = daysUntil(s.nextPaymentDate);
     if (daysToPayment === s.reminderDays) {
-      showNotification('Скоро списание', {
-        body: `${s.name}: ${formatMoney(s.price, s.currency)} через ${daysToPayment} дн.`,
+      showNotification(t('notif.paymentTitle'), {
+        body: t('notif.paymentBody', { name: s.name, amount: formatMoney(s.price, s.currency), days: daysToPayment }),
         tag: `payment-${s.id}-${s.nextPaymentDate}`,
       });
     }
@@ -52,11 +61,21 @@ export function checkAndNotify(subscriptions) {
     if (s.isTrial && s.trialEndDate) {
       const daysToTrialEnd = daysUntil(s.trialEndDate);
       if (daysToTrialEnd === s.reminderDays) {
-        showNotification('Пробный период заканчивается', {
-          body: `${s.name}: отмени, если не нужно`,
+        showNotification(t('notif.trialTitle'), {
+          body: t('notif.trialBody', { name: s.name }),
           tag: `trial-${s.id}-${s.trialEndDate}`,
         });
       }
     }
+  }
+
+  const backupDue = shouldRemindBackup(storage.getBackupReminderDays(), storage.getLastExportAt());
+  const today = todayISO();
+  if (backupDue && storage.getLastBackupNotifAt() !== today) {
+    showNotification(t('notif.backupTitle'), {
+      body: t('notif.backupBody'),
+      tag: `backup-${today}`,
+    });
+    storage.setLastBackupNotifAt(today);
   }
 }

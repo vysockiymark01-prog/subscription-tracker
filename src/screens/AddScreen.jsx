@@ -1,27 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useNotifications } from '../context/NotificationsContext.jsx';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import { searchPresets } from '../data/presets.js';
 import { CATEGORIES, PERIODS, REMINDER_OPTIONS } from '../storage.js';
 import { todayISO } from '../utils/dates.js';
 import { CURRENCIES } from '../utils/money.js';
 import PresetIcon from '../components/PresetIcon.jsx';
-
-const CATEGORY_LABEL = {
-  video: 'Видео',
-  music: 'Музыка',
-  software: 'Софт',
-  games: 'Игры',
-  education: 'Образование',
-  other: 'Другое',
-};
-
-const PERIOD_LABEL = {
-  week: 'Еженедельно',
-  month: 'Ежемесячно',
-  quarter: 'Ежеквартально',
-  year: 'Ежегодно',
-};
+import ColorPicker from '../components/ColorPicker.jsx';
 
 function emptyForm() {
   return {
@@ -35,12 +21,14 @@ function emptyForm() {
     trialEndDate: '',
     reminderDays: 3,
     splitCount: 1,
+    customColor: '',
   };
 }
 
 export default function AddScreen({ onClose }) {
   const { activeSubscriptions, addSubscription } = useAppData();
   const { notifyFirstSubscriptionAdded } = useNotifications();
+  const { t } = useLanguage();
   const [step, setStep] = useState('catalog');
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
@@ -86,23 +74,27 @@ export default function AddScreen({ onClose }) {
       reminderDays: Number(form.reminderDays),
       splitCount: Number(form.splitCount) > 0 ? Number(form.splitCount) : 1,
       iconKey: selectedPreset?.id ?? null,
+      customColor: form.customColor || null,
     });
     if (wasFirstSubscription) notifyFirstSubscriptionAdded();
     onClose();
   }
 
+  const previewColor = form.customColor || selectedPreset?.color || '#6C5CE7';
+  const previewLetter = selectedPreset?.letter ?? (form.name.trim().charAt(0).toUpperCase() || '?');
+
   return (
     <div className="overlay-screen">
       <div className="overlay-header">
         {step === 'form' ? (
-          <button className="overlay-header__back" onClick={() => setStep('catalog')} aria-label="Назад">
+          <button className="overlay-header__back" onClick={() => setStep('catalog')} aria-label={t('common.back')}>
             ←
           </button>
         ) : (
           <span />
         )}
-        <h2>Добавление подписки</h2>
-        <button className="overlay-header__close" onClick={onClose} aria-label="Закрыть">
+        <h2>{t('add.title')}</h2>
+        <button className="overlay-header__close" onClick={onClose} aria-label={t('common.close')}>
           ×
         </button>
       </div>
@@ -112,19 +104,19 @@ export default function AddScreen({ onClose }) {
           <input
             className="input"
             type="text"
-            placeholder="Поиск сервиса"
+            placeholder={t('add.search')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           <button className="btn btn--secondary btn--block" onClick={openCustom}>
-            Своя подписка
+            {t('add.custom')}
           </button>
           <div className="category-tabs">
             <button
               className={`category-tabs__item${activeCategory === 'all' ? ' category-tabs__item--active' : ''}`}
               onClick={() => setActiveCategory('all')}
             >
-              Все
+              {t('add.categoryAll')}
             </button>
             {CATEGORIES.map((c) => (
               <button
@@ -132,7 +124,7 @@ export default function AddScreen({ onClose }) {
                 className={`category-tabs__item${activeCategory === c ? ' category-tabs__item--active' : ''}`}
                 onClick={() => setActiveCategory(c)}
               >
-                {CATEGORY_LABEL[c]}
+                {t(`category.${c}`)}
               </button>
             ))}
           </div>
@@ -143,15 +135,19 @@ export default function AddScreen({ onClose }) {
                 <span>{preset.name}</span>
               </button>
             ))}
-            {results.length === 0 && <p className="add-catalog__empty">Ничего не найдено</p>}
+            {results.length === 0 && <p className="add-catalog__empty">{t('add.empty')}</p>}
           </div>
         </div>
       )}
 
       {step === 'form' && (
         <form className="subscription-form" onSubmit={handleSubmit}>
+          <div className="detail-icon-row">
+            <PresetIcon color={previewColor} letter={previewLetter} size={56} />
+          </div>
+
           <label>
-            Название
+            {t('add.name')}
             <input
               className="input"
               type="text"
@@ -161,9 +157,14 @@ export default function AddScreen({ onClose }) {
             />
           </label>
 
+          <label>
+            {t('add.color')}
+            <ColorPicker value={form.customColor} onChange={(color) => setField('customColor', color)} />
+          </label>
+
           <div className="form-row">
             <label>
-              Цена
+              {t('add.price')}
               <input
                 className="input"
                 type="number"
@@ -175,7 +176,7 @@ export default function AddScreen({ onClose }) {
               />
             </label>
             <label>
-              Валюта
+              {t('add.currency')}
               <select className="input" value={form.currency} onChange={(e) => setField('currency', e.target.value)}>
                 {CURRENCIES.map((c) => (
                   <option key={c.code} value={c.code}>
@@ -187,18 +188,18 @@ export default function AddScreen({ onClose }) {
           </div>
 
           <label>
-            Период
+            {t('add.period')}
             <select className="input" value={form.period} onChange={(e) => setField('period', e.target.value)}>
               {PERIODS.map((p) => (
                 <option key={p} value={p}>
-                  {PERIOD_LABEL[p]}
+                  {t(`period.${p}.full`)}
                 </option>
               ))}
             </select>
           </label>
 
           <label>
-            На скольких делится подписка
+            {t('add.split')}
             <input
               className="input"
               type="number"
@@ -210,18 +211,18 @@ export default function AddScreen({ onClose }) {
           </label>
 
           <label>
-            Категория
+            {t('add.category')}
             <select className="input" value={form.category} onChange={(e) => setField('category', e.target.value)}>
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>
-                  {CATEGORY_LABEL[c]}
+                  {t(`category.${c}`)}
                 </option>
               ))}
             </select>
           </label>
 
           <label>
-            Дата следующего списания
+            {t('add.nextPayment')}
             <input
               className="input"
               type="date"
@@ -232,7 +233,7 @@ export default function AddScreen({ onClose }) {
           </label>
 
           <label className="toggle-row">
-            <span>Пробный период</span>
+            <span>{t('add.trial')}</span>
             <input
               type="checkbox"
               checked={form.isTrial}
@@ -242,7 +243,7 @@ export default function AddScreen({ onClose }) {
 
           {form.isTrial && (
             <label>
-              Дата окончания триала
+              {t('add.trialEnd')}
               <input
                 className="input"
                 type="date"
@@ -253,7 +254,7 @@ export default function AddScreen({ onClose }) {
           )}
 
           <label>
-            Напомнить за
+            {t('add.remind')}
             <select
               className="input"
               value={form.reminderDays}
@@ -261,14 +262,14 @@ export default function AddScreen({ onClose }) {
             >
               {REMINDER_OPTIONS.map((d) => (
                 <option key={d} value={d}>
-                  {d} {d === 1 ? 'день' : 'дня'}
+                  {d} {t('unit.daysShort')}
                 </option>
               ))}
             </select>
           </label>
 
           <button className="btn btn--primary btn--block" type="submit" disabled={!isValid}>
-            Добавить подписку
+            {t('add.submit')}
           </button>
         </form>
       )}

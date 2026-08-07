@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './App.css';
 import { ThemeProvider } from './context/ThemeContext.jsx';
+import { LanguageProvider } from './context/LanguageContext.jsx';
 import { AppDataProvider } from './context/AppDataContext.jsx';
 import { NotificationsProvider } from './context/NotificationsContext.jsx';
 import { ExchangeRateProvider } from './context/ExchangeRateContext.jsx';
@@ -8,11 +9,15 @@ import BottomNav from './components/BottomNav.jsx';
 import NotificationPrimer from './components/NotificationPrimer.jsx';
 import HomeScreen from './screens/HomeScreen.jsx';
 import StatsScreen from './screens/StatsScreen.jsx';
+import CalendarScreen from './screens/CalendarScreen.jsx';
 import ArchiveScreen from './screens/ArchiveScreen.jsx';
 import SettingsScreen from './screens/SettingsScreen.jsx';
 import AddScreen from './screens/AddScreen.jsx';
 import DetailScreen from './screens/DetailScreen.jsx';
 import YearReviewScreen from './screens/YearReviewScreen.jsx';
+import OnboardingScreen from './screens/OnboardingScreen.jsx';
+import LockScreen from './screens/LockScreen.jsx';
+import * as storage from './storage.js';
 
 function AppShell() {
   const [tab, setTab] = useState('home');
@@ -28,6 +33,7 @@ function AppShell() {
       <main className="screen-area">
         {tab === 'home' && <HomeScreen onAdd={openAdd} onOpenDetail={openDetail} />}
         {tab === 'stats' && <StatsScreen onOpenYearReview={openYearReview} />}
+        {tab === 'calendar' && <CalendarScreen />}
         {tab === 'archive' && <ArchiveScreen onOpenDetail={openDetail} />}
         {tab === 'settings' && <SettingsScreen />}
       </main>
@@ -43,16 +49,33 @@ function AppShell() {
   );
 }
 
+// Ворота перед основным приложением: сначала код/биометрия (если включены в
+// настройках), затем — для совсем новых пользователей — короткий онбординг.
+function Gate() {
+  const [unlocked, setUnlocked] = useState(() => !storage.isAppLockEnabled());
+  const [onboarded, setOnboarded] = useState(() => storage.isOnboardingCompleted());
+
+  if (!unlocked) {
+    return <LockScreen onUnlock={() => setUnlocked(true)} />;
+  }
+  if (!onboarded) {
+    return <OnboardingScreen onDone={() => setOnboarded(true)} />;
+  }
+  return <AppShell />;
+}
+
 export default function App() {
   return (
     <ThemeProvider>
-      <AppDataProvider>
-        <NotificationsProvider>
-          <ExchangeRateProvider>
-            <AppShell />
-          </ExchangeRateProvider>
-        </NotificationsProvider>
-      </AppDataProvider>
+      <LanguageProvider>
+        <AppDataProvider>
+          <NotificationsProvider>
+            <ExchangeRateProvider>
+              <Gate />
+            </ExchangeRateProvider>
+          </NotificationsProvider>
+        </AppDataProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

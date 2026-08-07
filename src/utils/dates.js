@@ -32,29 +32,30 @@ export function daysUntil(dateStr) {
   return Math.round((target - today) / MS_PER_DAY);
 }
 
-export function formatDateRu(dateStr) {
-  return new Date(dateStr).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-}
+const LOCALE_TAGS = { ru: 'ru-RU', kk: 'kk-KZ', uk: 'uk-UA', be: 'be-BY', uz: 'uz-UZ' };
 
-function pluralizeDays(n) {
-  const abs = Math.abs(n);
-  const mod10 = abs % 10;
-  const mod100 = abs % 100;
-  if (mod10 === 1 && mod100 !== 11) return 'день';
-  if ([2, 3, 4].includes(mod10) && ![12, 13, 14].includes(mod100)) return 'дня';
-  return 'дней';
+/**
+ * Дата в коротком читаемом виде ("5 авг.") на языке интерфейса.
+ */
+export function formatShortDate(dateStr, language = 'ru') {
+  return new Date(dateStr).toLocaleDateString(LOCALE_TAGS[language] ?? 'ru-RU', {
+    day: 'numeric',
+    month: 'short',
+  });
 }
 
 /**
- * Человекочитаемое описание оставшегося времени до списания.
+ * Человекочитаемое описание оставшегося времени до списания на языке интерфейса.
+ * t — функция перевода (для "сегодня"/"завтра"/"вчера"), tp — функция перевода
+ * с учётом множественного числа (для "через N дней") из LanguageContext.
  */
-export function formatDaysUntil(dateStr) {
+export function formatDaysUntil(dateStr, t, tp) {
   const n = daysUntil(dateStr);
-  if (n === 0) return 'сегодня';
-  if (n === 1) return 'завтра';
-  if (n === -1) return 'вчера';
-  if (n < 0) return `${Math.abs(n)} ${pluralizeDays(n)} назад`;
-  return `через ${n} ${pluralizeDays(n)}`;
+  if (n === 0) return t('date.today');
+  if (n === 1) return t('date.tomorrow');
+  if (n === -1) return t('date.yesterday');
+  if (n < 0) return tp('date.daysAgo', Math.abs(n));
+  return tp('date.inDays', n);
 }
 
 /**

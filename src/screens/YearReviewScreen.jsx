@@ -1,11 +1,13 @@
 import { useMemo, useRef, useState } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import { toAnnual, formatMoney, splitPrice, sumConverted } from '../utils/money.js';
 
 export default function YearReviewScreen({ onClose }) {
   const { subscriptions, activeSubscriptions, cancelledSubscriptions } = useAppData();
   const { convert, displayCurrency } = useExchangeRate();
+  const { t, tp } = useLanguage();
   const cardRef = useRef(null);
   const [sharing, setSharing] = useState(false);
   const [shareError, setShareError] = useState(null);
@@ -70,7 +72,7 @@ export default function YearReviewScreen({ onClose }) {
         const file = new File([blob], `itog-goda-${year}.png`, { type: 'image/png' });
         try {
           if (navigator.share && navigator.canShare?.({ files: [file] })) {
-            await navigator.share({ files: [file], title: `Мой подписочный итог ${year} года` });
+            await navigator.share({ files: [file], title: t('year.subtitle') });
           } else {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -85,7 +87,7 @@ export default function YearReviewScreen({ onClose }) {
         setSharing(false);
       }, 'image/png');
     } catch {
-      setShareError('Не удалось подготовить картинку для шеринга. Попробуйте ещё раз.');
+      setShareError(t('year.shareError'));
       setSharing(false);
     }
   }
@@ -95,14 +97,14 @@ export default function YearReviewScreen({ onClose }) {
       <div className="overlay-screen">
         <div className="overlay-header">
           <span />
-          <h2>Итог года</h2>
-          <button className="overlay-header__close" onClick={onClose} aria-label="Закрыть">
+          <h2>{t('year.title')}</h2>
+          <button className="overlay-header__close" onClick={onClose} aria-label={t('common.close')}>
             ×
           </button>
         </div>
         <div className="empty-state">
-          <h2>Пока не о чем рассказать</h2>
-          <p>Добавьте хотя бы одну подписку, и здесь появится годовой итог</p>
+          <h2>{t('year.empty.title')}</h2>
+          <p>{t('year.empty.text')}</p>
         </div>
       </div>
     );
@@ -112,8 +114,8 @@ export default function YearReviewScreen({ onClose }) {
     <div className="overlay-screen">
       <div className="overlay-header">
         <span />
-        <h2>Итог года</h2>
-        <button className="overlay-header__close" onClick={onClose} aria-label="Закрыть">
+        <h2>{t('year.title')}</h2>
+        <button className="overlay-header__close" onClick={onClose} aria-label={t('common.close')}>
           ×
         </button>
       </div>
@@ -121,51 +123,49 @@ export default function YearReviewScreen({ onClose }) {
       <div className="year-review">
         <div className="year-review__card" ref={cardRef}>
           <div className="year-review__year">{year}</div>
-          <div className="year-review__title">Подписочный итог года</div>
+          <div className="year-review__title">{t('year.subtitle')}</div>
 
           <div className="year-review__big-number">{formatTotals(annualByCurrency, annualConverted)}</div>
-          <div className="year-review__big-label">потрачу на подписки за год</div>
+          <div className="year-review__big-label">{t('year.spendLabel')}</div>
 
           <div className="year-review__grid">
             <div className="year-review__stat">
               <div className="year-review__stat-value">{activeSubscriptions.length}</div>
-              <div className="year-review__stat-label">активных подписок</div>
+              <div className="year-review__stat-label">{t('year.active')}</div>
             </div>
             <div className="year-review__stat">
               <div className="year-review__stat-value">{categoriesCount}</div>
-              <div className="year-review__stat-label">категорий</div>
+              <div className="year-review__stat-label">{t('year.categories')}</div>
             </div>
             <div className="year-review__stat">
               <div className="year-review__stat-value">{cancelledThisYear.length}</div>
-              <div className="year-review__stat-label">отменено в {year}</div>
+              <div className="year-review__stat-label">{t('year.cancelledThisYear', { year })}</div>
             </div>
             <div className="year-review__stat">
               <div className="year-review__stat-value">{subscriptions.length}</div>
-              <div className="year-review__stat-label">подписок за всё время</div>
+              <div className="year-review__stat-label">{t('year.allTime')}</div>
             </div>
           </div>
 
           {topSubscription && (
             <div className="year-review__highlight">
-              Самая дорогая: <b>{topSubscription.name}</b> —{' '}
+              {t('year.topSub')} <b>{topSubscription.name}</b> —{' '}
               {formatMoney(toAnnual(splitPrice(topSubscription), topSubscription.period), topSubscription.currency)}
-              /год
+              {t('year.perYear')}
             </div>
           )}
 
           {cancelledThisYear.length > 0 && (
             <div className="year-review__highlight">
-              Отменив {cancelledThisYear.length} {cancelledThisYear.length === 1 ? 'подписку' : 'подписки'}, сэкономил
-              {' '}
-              {formatTotals(savedByCurrency, savedConverted)} в год
+              {tp('year.savedBy', cancelledThisYear.length, { amount: formatTotals(savedByCurrency, savedConverted) })}
             </div>
           )}
 
-          <div className="year-review__footer">Трекер подписок</div>
+          <div className="year-review__footer">{t('year.footer')}</div>
         </div>
 
         <button className="btn btn--primary btn--block" onClick={handleShare} disabled={sharing}>
-          {sharing ? 'Готовлю картинку…' : 'Поделиться'}
+          {sharing ? t('year.sharing') : t('year.share')}
         </button>
         {shareError && <p className="settings-message settings-message--error">{shareError}</p>}
       </div>

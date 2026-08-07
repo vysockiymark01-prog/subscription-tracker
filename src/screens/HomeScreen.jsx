@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import SubscriptionCard from '../components/SubscriptionCard.jsx';
 import NotificationBadge from '../components/NotificationBadge.jsx';
 import SmartTips from '../components/SmartTips.jsx';
@@ -9,6 +10,7 @@ import { toMonthly, toAnnual, formatMoney, splitPrice, sumConverted } from '../u
 export default function HomeScreen({ onAdd, onOpenDetail }) {
   const { activeSubscriptions } = useAppData();
   const { convert, displayCurrency } = useExchangeRate();
+  const { t } = useLanguage();
 
   const sorted = useMemo(
     () => [...activeSubscriptions].sort((a, b) => a.nextPaymentDate.localeCompare(b.nextPaymentDate)),
@@ -43,10 +45,10 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
     return (
       <div className="screen home-screen home-screen--empty">
         <div className="empty-state">
-          <h2>Пока нет подписок</h2>
-          <p>Добавь первую подписку, чтобы отслеживать списания</p>
+          <h2>{t('home.empty.title')}</h2>
+          <p>{t('home.empty.text')}</p>
           <button className="btn btn--primary" onClick={onAdd}>
-            Добавить первую подписку
+            {t('home.empty.cta')}
           </button>
         </div>
       </div>
@@ -58,7 +60,7 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
       <NotificationBadge />
       <div className="home-totals">
         <div className="home-totals__item">
-          <div className="home-totals__label">В месяц</div>
+          <div className="home-totals__label">{t('home.totals.monthly')}</div>
           <div className="home-totals__value">
             {monthlyConverted !== null
               ? formatMoney(monthlyConverted, displayCurrency)
@@ -66,7 +68,7 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
           </div>
         </div>
         <div className="home-totals__item">
-          <div className="home-totals__label">В год</div>
+          <div className="home-totals__label">{t('home.totals.yearly')}</div>
           <div className="home-totals__value">
             {annualConverted !== null
               ? formatMoney(annualConverted, displayCurrency)
@@ -83,7 +85,7 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
         ))}
       </div>
 
-      <button className="fab" onClick={onAdd} aria-label="Добавить подписку">
+      <button className="fab" onClick={onAdd} aria-label={t('home.addAria')}>
         +
       </button>
     </div>
