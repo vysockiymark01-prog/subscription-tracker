@@ -284,6 +284,27 @@ export function setLastExportAt(isoString) {
   }
 }
 
+const DISMISSED_TIPS_KEY = 'dismissed-tip-ids';
+
+export function getDismissedTipIds() {
+  try {
+    const raw = localStorage.getItem(DISMISSED_TIPS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addDismissedTipIds(ids) {
+  try {
+    const current = getDismissedTipIds();
+    const merged = [...new Set([...current, ...ids])];
+    localStorage.setItem(DISMISSED_TIPS_KEY, JSON.stringify(merged));
+  } catch {
+    // не критично
+  }
+}
+
 const LAST_BACKUP_NOTIF_KEY = 'last-backup-notif-at';
 
 export function getLastBackupNotifAt() {

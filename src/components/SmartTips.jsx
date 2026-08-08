@@ -15,10 +15,10 @@ import * as storage from '../storage.js';
  * напоминание про бэкап. Считается локально по уже имеющимся данным.
  */
 export default function SmartTips({ subscriptions }) {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissedIds, setDismissedIds] = useState(() => storage.getDismissedTipIds());
   const { t, tp } = useLanguage();
 
-  const items = useMemo(() => {
+  const allItems = useMemo(() => {
     const priceTips = getPriceIncreaseTips(subscriptions);
     const dupTips = getDuplicateCategoryTips(subscriptions);
     const staleTips = getStaleSubscriptionTips(subscriptions);
@@ -26,7 +26,9 @@ export default function SmartTips({ subscriptions }) {
 
     const list = [];
     if (backupDue) {
-      list.push({ id: 'backup', text: t('tips.backup') });
+      // В id зашит последний экспорт, чтобы после нового бэкапа подсказка не
+      // осталась скрытой навсегда — это будет уже новый повод напомнить.
+      list.push({ id: `backup-${storage.getLastExportAt() ?? 'never'}`, text: t('tips.backup') });
     }
     for (const tItem of priceTips.slice(0, 2)) {
       list.push({
@@ -49,12 +51,29 @@ export default function SmartTips({ subscriptions }) {
       });
     }
     if (staleTips.length > 0) {
-      list.push({ id: 'stale', text: tp('tips.stale', staleTips.length) });
+      // В id зашит набор конкретных подписок — если он изменится (появится
+      // новая «зависшая» или старую поправят), это будет новый повод напомнить.
+      const key = staleTips
+        .map((s) => s.id)
+        .sort()
+        .join(',');
+      list.push({ id: `stale-${key}`, text: tp('tips.stale', staleTips.length) });
     }
     return list.slice(0, 3);
   }, [subscriptions, t, tp]);
 
-  if (items.length === 0 || dismissed) return null;
+  const items = useMemo(
+    () => allItems.filter((tip) => !dismissedIds.includes(tip.id)),
+    [allItems, dismissedIds],
+  );
+
+  if (items.length === 0) return null;
+
+  function handleDismiss() {
+    const ids = items.map((tip) => tip.id);
+    storage.addDismissedTipIds(ids);
+    setDismissedIds((prev) => [...new Set([...prev, ...ids])]);
+  }
 
   return (
     <div className="smart-tips">
@@ -63,7 +82,7 @@ export default function SmartTips({ subscriptions }) {
           {tip.text}
         </div>
       ))}
-      <button className="smart-tips__dismiss" onClick={() => setDismissed(true)}>
+      <button className="smart-tips__dismiss" onClick={handleDismiss}>
         {t('tips.hide')}
       </button>
     </div>
