@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useNotifications } from '../context/NotificationsContext.jsx';
+import { vibrate } from '../utils/haptics.js';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { searchPresets } from '../data/presets.js';
 import { CATEGORIES, PERIODS, REMINDER_OPTIONS } from '../storage.js';
@@ -8,6 +9,7 @@ import { todayISO } from '../utils/dates.js';
 import { CURRENCIES } from '../utils/money.js';
 import PresetIcon from '../components/PresetIcon.jsx';
 import ColorPicker from '../components/ColorPicker.jsx';
+import EmojiPicker from '../components/EmojiPicker.jsx';
 
 function emptyForm() {
   return {
@@ -22,6 +24,8 @@ function emptyForm() {
     reminderDays: 3,
     splitCount: 1,
     customColor: '',
+    emoji: '',
+    note: '',
   };
 }
 
@@ -75,13 +79,17 @@ export default function AddScreen({ onClose }) {
       splitCount: Number(form.splitCount) > 0 ? Number(form.splitCount) : 1,
       iconKey: selectedPreset?.id ?? null,
       customColor: form.customColor || null,
+      emoji: form.emoji || null,
+      note: form.note.trim(),
     });
+    vibrate();
     if (wasFirstSubscription) notifyFirstSubscriptionAdded();
     onClose();
   }
 
   const previewColor = form.customColor || selectedPreset?.color || '#6C5CE7';
   const previewLetter = selectedPreset?.letter ?? (form.name.trim().charAt(0).toUpperCase() || '?');
+  const previewEmoji = form.emoji || null;
 
   return (
     <div className="overlay-screen">
@@ -143,7 +151,7 @@ export default function AddScreen({ onClose }) {
       {step === 'form' && (
         <form className="subscription-form" onSubmit={handleSubmit}>
           <div className="detail-icon-row">
-            <PresetIcon color={previewColor} letter={previewLetter} size={56} />
+            <PresetIcon color={previewColor} letter={previewLetter} emoji={previewEmoji} size={56} />
           </div>
 
           <label>
@@ -160,6 +168,11 @@ export default function AddScreen({ onClose }) {
           <label>
             {t('add.color')}
             <ColorPicker value={form.customColor} onChange={(color) => setField('customColor', color)} />
+          </label>
+
+          <label>
+            {t('add.emoji')}
+            <EmojiPicker value={form.emoji} onChange={(emoji) => setField('emoji', emoji)} />
           </label>
 
           <div className="form-row">
@@ -266,6 +279,16 @@ export default function AddScreen({ onClose }) {
                 </option>
               ))}
             </select>
+          </label>
+
+          <label>
+            {t('add.note')}
+            <textarea
+              className="input textarea"
+              rows={2}
+              value={form.note}
+              onChange={(e) => setField('note', e.target.value)}
+            />
           </label>
 
           <button className="btn btn--primary btn--block" type="submit" disabled={!isValid}>

@@ -59,6 +59,8 @@ export function createSubscription(fields) {
     reminderDays: 3,
     iconKey: null,
     customColor: null,
+    emoji: null,
+    note: '',
     splitCount: 1,
     priceHistory: [],
     ...fields,

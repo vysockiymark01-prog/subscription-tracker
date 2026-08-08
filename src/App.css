@@ -1013,3 +1013,117 @@
   align-items: center;
   gap: 12px;
 }
+
+/* --- Свайп по карточке подписки --- */
+
+.subscription-card-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.subscription-card__swipe-action {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border: none;
+  background: var(--danger);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 8px;
+}
+
+.subscription-card-wrap .subscription-card {
+  position: relative;
+  z-index: 1;
+  transition: transform 0.15s ease-out;
+}
+
+/* --- Поиск и сортировка на главном экране --- */
+
+.home-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.home-toolbar .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.home-toolbar__sort {
+  flex: 0 0 auto;
+  max-width: 40%;
+}
+
+/* --- Эмодзи-пикер иконки подписки --- */
+
+.emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.emoji-picker__item {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background: var(--card-bg);
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.emoji-picker__item--auto {
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+}
+
+.emoji-picker__item--active {
+  border-color: var(--text-h);
+}
+
+/* --- Заметка (textarea) --- */
+
+.textarea {
+  resize: vertical;
+  font-family: inherit;
+  min-height: 44px;
+}
+
+/* --- Потрачено за всё время --- */
+
+.stats-lifetime {
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 4px;
+}
+
+.stats-lifetime__label {
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.stats-lifetime__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+/* --- Накопленная экономия в архиве --- */
+
+.archive-savings__accumulated {
+  font-size: 13px;
+  color: var(--text);
+  margin-top: 6px;
+}

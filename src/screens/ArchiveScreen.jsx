@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 import PresetIcon from '../components/PresetIcon.jsx';
 import { getIconFor } from '../data/presets.js';
 import { toAnnual, formatMoney, sumConverted } from '../utils/money.js';
+import { getSavingsSinceCancellation } from '../utils/insights.js';
 
 export default function ArchiveScreen({ onOpenDetail }) {
   const { cancelledSubscriptions, pausedSubscriptions, restoreSubscription, resumeSubscription } = useAppData();
@@ -22,6 +23,15 @@ export default function ArchiveScreen({ onOpenDetail }) {
   const savedPerYearConverted = useMemo(
     () => sumConverted(savedPerYearByCurrency, convert),
     [savedPerYearByCurrency, convert],
+  );
+
+  const savedSinceCancelByCurrency = useMemo(
+    () => getSavingsSinceCancellation(cancelledSubscriptions),
+    [cancelledSubscriptions],
+  );
+  const savedSinceCancelConverted = useMemo(
+    () => sumConverted(savedSinceCancelByCurrency, convert),
+    [savedSinceCancelByCurrency, convert],
   );
 
   if (cancelledSubscriptions.length === 0 && pausedSubscriptions.length === 0) {
@@ -46,6 +56,14 @@ export default function ArchiveScreen({ onOpenDetail }) {
               : savedPerYearByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')}{' '}
             {t('archive.perYear')}
           </div>
+          {savedSinceCancelByCurrency.length > 0 && (
+            <div className="archive-savings__accumulated">
+              {t('archive.savingsSinceCancel')}:{' '}
+              {savedSinceCancelConverted !== null
+                ? formatMoney(savedSinceCancelConverted, displayCurrency)
+                : savedSinceCancelByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')}
+            </div>
+          )}
         </div>
       )}
 
@@ -58,7 +76,7 @@ export default function ArchiveScreen({ onOpenDetail }) {
               return (
                 <div key={s.id} className="archive-item">
                   <button className="archive-item__main" onClick={() => onOpenDetail(s.id)}>
-                    <PresetIcon color={icon.color} letter={icon.letter} />
+                    <PresetIcon color={icon.color} letter={icon.letter} emoji={icon.emoji} />
                     <div className="subscription-card__info">
                       <div className="subscription-card__name">{s.name}</div>
                       <div className="subscription-card__meta">
@@ -85,7 +103,7 @@ export default function ArchiveScreen({ onOpenDetail }) {
               return (
                 <div key={s.id} className="archive-item">
                   <button className="archive-item__main" onClick={() => onOpenDetail(s.id)}>
-                    <PresetIcon color={icon.color} letter={icon.letter} />
+                    <PresetIcon color={icon.color} letter={icon.letter} emoji={icon.emoji} />
                     <div className="subscription-card__info">
                       <div className="subscription-card__name">{s.name}</div>
                       <div className="subscription-card__meta">

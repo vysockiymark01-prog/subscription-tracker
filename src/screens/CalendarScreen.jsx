@@ -155,7 +155,7 @@ export default function CalendarScreen() {
               const icon = getIconFor(s);
               return (
                 <div key={s.id} className="subscription-card">
-                  <PresetIcon color={icon.color} letter={icon.letter} />
+                  <PresetIcon color={icon.color} letter={icon.letter} emoji={icon.emoji} />
                   <div className="subscription-card__info">
                     <div className="subscription-card__name">{s.name}</div>
                     <div className="subscription-card__meta">{formatMoney(s.price, s.currency)}</div>

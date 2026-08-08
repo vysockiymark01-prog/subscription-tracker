@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { LanguageProvider } from './context/LanguageContext.jsx';
@@ -27,6 +27,18 @@ function AppShell() {
   const openDetail = (id) => setOverlay({ type: 'detail', id });
   const openYearReview = () => setOverlay({ type: 'year-review' });
   const closeOverlay = () => setOverlay(null);
+
+  // Обработка ярлыков приложения (долгое нажатие на иконку на Android):
+  // ?action=add открывает добавление подписки, ?screen=calendar сразу открывает
+  // вкладку календаря. Один раз при монтировании, дальше чистим URL.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get('action');
+    const screen = params.get('screen');
+    if (action === 'add') setOverlay({ type: 'add' });
+    if (['home', 'stats', 'calendar', 'archive', 'settings'].includes(screen)) setTab(screen);
+    if (action || screen) window.history.replaceState(null, '', window.location.pathname);
+  }, []);
 
   return (
     <div className="app-shell">

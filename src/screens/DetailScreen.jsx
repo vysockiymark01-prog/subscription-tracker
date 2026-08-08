@@ -4,9 +4,11 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 import { CATEGORIES, PERIODS, REMINDER_OPTIONS } from '../storage.js';
 import PresetIcon from '../components/PresetIcon.jsx';
 import ColorPicker from '../components/ColorPicker.jsx';
+import EmojiPicker from '../components/EmojiPicker.jsx';
 import { getIconFor, getPresetById } from '../data/presets.js';
 import { formatMoney, splitPrice, CURRENCIES } from '../utils/money.js';
 import { buildSubscriptionIcs } from '../utils/ics.js';
+import { vibrate } from '../utils/haptics.js';
 
 export default function DetailScreen({ id, onClose }) {
   const {
@@ -61,31 +63,38 @@ export default function DetailScreen({ id, onClose }) {
       reminderDays: Number(form.reminderDays),
       splitCount: Number(form.splitCount) > 0 ? Number(form.splitCount) : 1,
       customColor: form.customColor || null,
+      emoji: form.emoji || null,
+      note: form.note || '',
     });
     onClose();
   }
 
   function handleCancelSubscription() {
+    vibrate();
     cancelSubscription(id);
     onClose();
   }
 
   function handleRestore() {
+    vibrate();
     restoreSubscription(id);
     onClose();
   }
 
   function handlePause() {
+    vibrate();
     pauseSubscription(id);
     onClose();
   }
 
   function handleResume() {
+    vibrate();
     resumeSubscription(id);
     onClose();
   }
 
   function handleDelete() {
+    vibrate([20, 40, 20]);
     deleteSubscription(id);
     onClose();
   }
@@ -114,7 +123,7 @@ export default function DetailScreen({ id, onClose }) {
       </div>
 
       <div className="detail-icon-row">
-        <PresetIcon color={icon.color} letter={icon.letter} size={56} />
+        <PresetIcon color={icon.color} letter={icon.letter} emoji={icon.emoji} size={56} />
       </div>
 
       {subscription.status === 'paused' && <div className="status-banner">{t('detail.paused')}</div>}
@@ -134,6 +143,11 @@ export default function DetailScreen({ id, onClose }) {
         <label>
           {t('add.color')}
           <ColorPicker value={form.customColor} onChange={(color) => setField('customColor', color)} />
+        </label>
+
+        <label>
+          {t('add.emoji')}
+          <EmojiPicker value={form.emoji ?? ''} onChange={(emoji) => setField('emoji', emoji)} />
         </label>
 
         <div className="form-row">
@@ -259,6 +273,16 @@ export default function DetailScreen({ id, onClose }) {
               </option>
             ))}
           </select>
+        </label>
+
+        <label>
+          {t('add.note')}
+          <textarea
+            className="input textarea"
+            rows={2}
+            value={form.note ?? ''}
+            onChange={(e) => setField('note', e.target.value)}
+          />
         </label>
 
         <button className="btn btn--primary btn--block" type="submit" disabled={!isValid}>

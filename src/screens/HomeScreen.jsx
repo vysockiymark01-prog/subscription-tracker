@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
@@ -6,16 +6,36 @@ import SubscriptionCard from '../components/SubscriptionCard.jsx';
 import NotificationBadge from '../components/NotificationBadge.jsx';
 import SmartTips from '../components/SmartTips.jsx';
 import { toMonthly, toAnnual, formatMoney, splitPrice, sumConverted } from '../utils/money.js';
+import { vibrate } from '../utils/haptics.js';
+
+const SORTERS = {
+  date: (a, b) => a.nextPaymentDate.localeCompare(b.nextPaymentDate),
+  priceDesc: (a, b) => toMonthly(splitPrice(b), b.period) - toMonthly(splitPrice(a), a.period),
+  name: (a, b) => a.name.localeCompare(b.name, 'ru'),
+};
 
 export default function HomeScreen({ onAdd, onOpenDetail }) {
-  const { activeSubscriptions } = useAppData();
+  const { activeSubscriptions, cancelSubscription } = useAppData();
   const { convert, displayCurrency } = useExchangeRate();
   const { t } = useLanguage();
+  const [query, setQuery] = useState('');
+  const [sortBy, setSortBy] = useState('date');
 
   const sorted = useMemo(
-    () => [...activeSubscriptions].sort((a, b) => a.nextPaymentDate.localeCompare(b.nextPaymentDate)),
-    [activeSubscriptions],
+    () => [...activeSubscriptions].sort(SORTERS[sortBy] ?? SORTERS.date),
+    [activeSubscriptions, sortBy],
   );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return sorted;
+    return sorted.filter((s) => s.name.toLowerCase().includes(q));
+  }, [sorted, query]);
+
+  function handleSwipeArchive(id) {
+    vibrate();
+    cancelSubscription(id);
+  }
 
   // Суммы считаются отдельно по каждой валюте — конвертации нет, складывать их напрямую нельзя.
   const monthlyTotalsByCurrency = useMemo(() => {
@@ -79,11 +99,37 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
 
       <SmartTips subscriptions={sorted} />
 
-      <div className="subscription-list">
-        {sorted.map((s) => (
-          <SubscriptionCard key={s.id} subscription={s} onClick={() => onOpenDetail(s.id)} />
-        ))}
-      </div>
+      {sorted.length > 3 && (
+        <div className="home-toolbar">
+          <input
+            className="input"
+            type="text"
+            placeholder={t('home.search')}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <select className="input home-toolbar__sort" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="date">{t('home.sort.date')}</option>
+            <option value="priceDesc">{t('home.sort.priceDesc')}</option>
+            <option value="name">{t('home.sort.name')}</option>
+          </select>
+        </div>
+      )}
+
+      {filtered.length === 0 ? (
+        <p className="add-catalog__empty">{t('home.searchEmpty')}</p>
+      ) : (
+        <div className="subscription-list">
+          {filtered.map((s) => (
+            <SubscriptionCard
+              key={s.id}
+              subscription={s}
+              onClick={() => onOpenDetail(s.id)}
+              onSwipeArchive={handleSwipeArchive}
+            />
+          ))}
+        </div>
+      )}
 
       <button className="fab" onClick={onAdd} aria-label={t('home.addAria')}>
         +

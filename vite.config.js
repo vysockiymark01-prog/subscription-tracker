@@ -23,6 +23,20 @@ export default defineConfig({
         start_url: '/subscription-tracker/',
         scope: '/subscription-tracker/',
         categories: ['finance', 'productivity', 'utilities'],
+        shortcuts: [
+          {
+            name: 'Добавить подписку',
+            short_name: 'Добавить',
+            url: '/subscription-tracker/?action=add',
+            icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }],
+          },
+          {
+            name: 'Календарь платежей',
+            short_name: 'Календарь',
+            url: '/subscription-tracker/?screen=calendar',
+            icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }],
+          },
+        ],
         icons: [
           {
             src: 'pwa-192x192.png',

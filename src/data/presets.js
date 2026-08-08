@@ -76,6 +76,13 @@ function hashColor(str) {
   return FALLBACK_COLORS[hash % FALLBACK_COLORS.length];
 }
 
+// Набор эмодзи для быстрого выбора вместо буквы на иконке подписки.
+export const ICON_EMOJIS = [
+  '🎬', '🎵', '📺', '☁️', '🎮', '📚', '💪', '🍔',
+  '🚗', '🏠', '💊', '📱', '🛒', '✈️', '🎧', '📰',
+  '💳', '🤖', '🔒', '🎨',
+];
+
 // Палитра для ручного выбора цвета иконки — как для пресетов, так и для своих подписок.
 export const ICON_COLORS = [
   '#6C5CE7', '#00B894', '#0984E3', '#E17055', '#D63031', '#00CEC9', '#FDCB6E',
@@ -92,5 +99,5 @@ export function getIconFor(subscription) {
   const name = subscription.name || '?';
   const letter = preset?.letter ?? name.trim().charAt(0).toUpperCase() ?? '?';
   const color = subscription.customColor || preset?.color || hashColor(name);
-  return { color, letter };
+  return { color, letter, emoji: subscription.emoji || null };
 }

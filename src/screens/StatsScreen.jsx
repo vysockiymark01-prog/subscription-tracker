@@ -4,7 +4,8 @@ import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { CATEGORIES } from '../storage.js';
 import { getIconFor } from '../data/presets.js';
-import { toMonthly, formatMoney, splitPrice } from '../utils/money.js';
+import { toMonthly, formatMoney, splitPrice, sumConverted } from '../utils/money.js';
+import { getLifetimeSpend } from '../utils/insights.js';
 
 const LOCALE_TAGS = { ru: 'ru-RU', kk: 'kk-KZ', uk: 'uk-UA', be: 'be-BY', uz: 'uz-UZ' };
 
@@ -87,6 +88,12 @@ export default function StatsScreen({ onOpenYearReview }) {
 
   const maxTrend = useMemo(() => Math.max(1, ...trend.map((m) => m.total)), [trend]);
 
+  const lifetimeSpendByCurrency = useMemo(() => getLifetimeSpend(subscriptions), [subscriptions]);
+  const lifetimeSpendConverted = useMemo(
+    () => sumConverted(lifetimeSpendByCurrency, convert),
+    [lifetimeSpendByCurrency, convert],
+  );
+
   if (activeSubscriptions.length === 0) {
     return (
       <div className="screen stats-screen stats-screen--empty">
@@ -103,6 +110,17 @@ export default function StatsScreen({ onOpenYearReview }) {
       <button className="btn btn--secondary btn--block" onClick={onOpenYearReview}>
         {t('stats.yearReview')}
       </button>
+
+      {lifetimeSpendByCurrency.length > 0 && (
+        <div className="stats-lifetime">
+          <div className="stats-lifetime__label">{t('stats.lifetimeSpend')}</div>
+          <div className="stats-lifetime__value">
+            {lifetimeSpendConverted !== null
+              ? formatMoney(lifetimeSpendConverted, displayCurrency)
+              : lifetimeSpendByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')}
+          </div>
+        </div>
+      )}
 
       <section className="stats-section">
         <h2>{t('stats.byCategory')}</h2>
