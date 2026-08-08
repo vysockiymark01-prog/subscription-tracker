@@ -6,6 +6,7 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 import { todayISO } from '../utils/dates.js';
 import { CURRENCIES } from '../utils/money.js';
 import { LANGUAGES } from '../i18n/index.js';
+import { getChangelog } from '../data/changelog.js';
 import * as storage from '../storage.js';
 import { hashPin } from '../utils/pin.js';
 import { isBiometricAvailable, registerBiometric } from '../utils/webauthn.js';
@@ -32,6 +33,7 @@ export default function SettingsScreen() {
   const fileInputRef = useRef(null);
   const [message, setMessage] = useState(null);
   const [showAbout, setShowAbout] = useState(false);
+  const [showWhatsNew, setShowWhatsNew] = useState(false);
 
   const [backupDays, setBackupDays] = useState(() => storage.getBackupReminderDays());
   const [lastExportAt, setLastExportAt] = useState(() => storage.getLastExportAt());
@@ -283,6 +285,26 @@ export default function SettingsScreen() {
           onChange={handleFileChange}
         />
         {message && <p className={`settings-message settings-message--${message.type}`}>{message.text}</p>}
+      </section>
+
+      <section className="settings-section">
+        <button className="btn btn--secondary btn--block" onClick={() => setShowWhatsNew((v) => !v)}>
+          {t('settings.whatsNew')}
+        </button>
+        {showWhatsNew && (
+          <div className="whats-new">
+            {getChangelog(language).map((entry) => (
+              <div key={entry.date} className="whats-new__entry">
+                <p className="whats-new__date">{entry.date}</p>
+                <ul className="whats-new__list">
+                  {entry.items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="settings-section">

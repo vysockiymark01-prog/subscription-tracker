@@ -102,6 +102,8 @@ export default {
   'settings.data.importSuccessCsv': "Import qilingan obunalar: {count}",
   'settings.data.importError': "Faylni o'qib bo'lmadi: format noto'g'ri",
 
+  'settings.whatsNew': 'Nimalar yangi',
+
   'settings.about': 'Ilova haqida',
   'settings.about.text': "Obunalar trekeri — pullik obunalarni hisobga olish va to'lovlar haqida eslatish uchun ilova. Banklarga hech qanday kirish yo'q, barcha ma'lumotlar qurilmangizda lokal saqlanadi.",
 

@@ -20,8 +20,15 @@ import LockScreen from './screens/LockScreen.jsx';
 import * as storage from './storage.js';
 
 function AppShell() {
-  const [tab, setTab] = useState('home');
+  const [tab, setTabState] = useState(() => storage.getLastTab());
   const [overlay, setOverlay] = useState(null);
+
+  // Оборачиваем setState, чтобы выбор вкладки сразу сохранялся — иначе
+  // обновление страницы (F5, перезапуск PWA) всегда сбрасывало на главную.
+  function setTab(next) {
+    setTabState(next);
+    storage.setLastTab(next);
+  }
 
   const openAdd = () => setOverlay({ type: 'add' });
   const openDetail = (id) => setOverlay({ type: 'detail', id });

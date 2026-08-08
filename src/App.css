@@ -1127,3 +1127,37 @@
   color: var(--text);
   margin-top: 6px;
 }
+
+/* --- Раздел «Что нового» в настройках --- */
+
+.whats-new {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.whats-new__entry + .whats-new__entry {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.whats-new__date {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin-bottom: 6px;
+}
+
+.whats-new__list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.whats-new__list li {
+  font-size: 13px;
+  color: var(--text);
+}

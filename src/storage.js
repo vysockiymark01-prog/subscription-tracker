@@ -393,3 +393,27 @@ export function isOnboardingCompleted() {
 export function setOnboardingCompleted() {
   localStorage.setItem(ONBOARDING_KEY, '1');
 }
+
+const LAST_TAB_KEY = 'last-tab';
+const VALID_TABS = ['home', 'stats', 'calendar', 'archive', 'settings'];
+
+/**
+ * Последняя открытая вкладка нижней навигации — чтобы обновление страницы
+ * (F5, повторный запуск PWA) не перекидывало пользователя на главную.
+ */
+export function getLastTab() {
+  try {
+    const value = localStorage.getItem(LAST_TAB_KEY);
+    return VALID_TABS.includes(value) ? value : 'home';
+  } catch {
+    return 'home';
+  }
+}
+
+export function setLastTab(tab) {
+  try {
+    if (VALID_TABS.includes(tab)) localStorage.setItem(LAST_TAB_KEY, tab);
+  } catch {
+    // не критично
+  }
+}
