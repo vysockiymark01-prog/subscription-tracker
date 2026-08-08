@@ -5,10 +5,16 @@
  * Категории, где две и более активные подписки — вероятный повод присмотреться,
  * не дублируют ли они друг друга (например, два видеосервиса).
  */
+// Категории, где сервисы обычно взаимозаменяемы (два стриминга почти наверняка
+// дублируют друг друга) — только для них имеет смысл подсказка про дубли.
+// «Софт», «Игры», «Образование» слишком разнородны: например iCloud и Claude Pro
+// оба попадают в «Софт», но ничего общего не делают, и подсказка про них — шум.
+const REDUNDANCY_PRONE_CATEGORIES = ['video', 'music'];
+
 export function getDuplicateCategoryTips(subscriptions) {
   const byCategory = {};
   for (const s of subscriptions) {
-    if (s.category === 'other') continue;
+    if (!REDUNDANCY_PRONE_CATEGORIES.includes(s.category)) continue;
     (byCategory[s.category] ??= []).push(s);
   }
   return Object.entries(byCategory)
