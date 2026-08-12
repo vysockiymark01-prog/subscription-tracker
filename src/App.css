@@ -203,6 +203,7 @@
   inset: 0;
   background: var(--bg);
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   z-index: 10;
 }
 
@@ -905,6 +906,7 @@
 .onboarding-screen__grid {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   margin-bottom: 16px;
 }
 
