@@ -415,21 +415,34 @@
 
 /* --- Stats screen --- */
 
+.stats-screen {
+  padding-top: 12px;
+  padding-bottom: 16px;
+}
+
+.stats-screen .btn--block {
+  margin-top: 0;
+}
+
 .stats-section {
-  margin-bottom: 28px;
+  margin-bottom: 18px;
+}
+
+.stats-section h2 {
+  margin-bottom: 4px;
 }
 
 .category-bars {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 8px;
 }
 
 .category-bar__label {
   display: flex;
   justify-content: space-between;
   font-size: 14px;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
   color: var(--text-h);
 }
 
@@ -754,8 +767,8 @@
   display: flex;
   align-items: flex-end;
   gap: 6px;
-  height: 120px;
-  padding-top: 8px;
+  height: 90px;
+  padding-top: 6px;
 }
 
 .trend-chart__col {
@@ -1104,8 +1117,9 @@
 .stats-lifetime {
   background: var(--card-bg);
   border-radius: 14px;
-  padding: 14px 16px;
+  padding: 10px 16px;
   margin-bottom: 4px;
+  margin-top: 10px;
 }
 
 .stats-lifetime__label {
