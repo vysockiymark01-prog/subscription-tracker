@@ -34,6 +34,7 @@ export const PRESETS = [
   { id: 'github-copilot', name: 'GitHub Copilot', price: 999, category: 'software', color: '#8957E5', letter: 'G', cancelUrl: 'https://github.com/settings/copilot', cancelHint: 'Settings → Copilot' },
   { id: 'midjourney', name: 'Midjourney', price: 999, category: 'software', color: '#4B0082', letter: 'M', cancelUrl: 'https://www.midjourney.com', cancelHint: 'Account → Subscription' },
   { id: 'perplexity-pro', name: 'Perplexity Pro', price: 1999, category: 'software', color: '#20808D', letter: 'P', cancelUrl: 'https://www.perplexity.ai', cancelHint: 'Settings → Account → Subscription' },
+  { id: 'syntx-ai', name: 'Syntx AI', price: 890, category: 'software', color: '#6D28D9', letter: 'S', cancelUrl: 'https://syntx.ai', cancelHint: 'Личный кабинет на syntx.ai или Telegram-бот → Подписка' },
 
   // Видео
   { id: 'apple-tv-plus', name: 'Apple TV+', price: 299, category: 'video', color: '#000000', letter: 'A', cancelUrl: 'https://tv.apple.com', cancelHint: 'Настройки iPhone → Apple ID → Подписки → Apple TV+' },
