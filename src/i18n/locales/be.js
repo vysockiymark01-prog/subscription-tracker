@@ -39,8 +39,15 @@ export default {
   'home.sort.priceDesc': 'Спачатку даражэйшыя',
   'home.sort.name': 'Па назве (А-Я)',
   'home.swipeArchive': 'У архіў',
+  'home.select': 'Выбраць',
+  'home.selectedCount': 'Выбрана: {count}',
+  'home.bulkArchive': 'У архіў',
+  'home.bulkDelete': 'Выдаліць',
+  'home.bulkDeleteConfirm': 'Выдаліць выбраныя падпіскі без магчымасці аднаўлення?',
+  'home.bulkDeleteYes': 'Так, выдаліць',
 
   'subscriptionCard.splitShare': 'мая доля',
+  'subscriptionCard.oneTime': 'разова',
 
   'stats.empty.title': 'Пакуль няма даных',
   'stats.empty.text': 'Статыстыка з’явіцца пасля дадання падпісак',
@@ -77,6 +84,12 @@ export default {
   'settings.currency.ratesOn': 'Курс на',
   'settings.currency.error': 'Не атрымалася атрымаць курс — вынікі часова паказваюцца асобна.',
   'settings.currency.refresh': 'Абнавіць курс',
+
+  'settings.categories.title': 'Мае катэгорыі',
+  'settings.categories.hint': 'Свае катэгорыі з’явяцца ў спісе пры даданні і рэдагаванні падпіскі, а таксама ў статыстыцы.',
+  'settings.categories.placeholder': 'Назва катэгорыі',
+  'settings.categories.add': 'Дадаць',
+  'settings.categories.remove': 'Выдаліць катэгорыю',
 
   'settings.backup.title': 'Напамін пра бэкап',
   'settings.backup.hint': 'Дадзеныя захоўваюцца толькі на гэтай прыладзе. Дашлём апавяшчэнне, калі даўно не экспартавалі іх.',
@@ -125,6 +138,8 @@ export default {
   'add.trial': 'Пробны перыяд',
   'add.trialEnd': 'Дата заканчэння трыялу',
   'add.remind': 'Нагадаць за',
+  'add.oneTime': 'Разавая — не працягваць аўтаматычна',
+  'add.oneTime.hint': 'Пасля даты плацяжу дата не зрушыцца сама — не забудзьце скасаваць або архіваваць падпіску, калі яна скончыцца.',
   'unit.daysShort': 'дн.',
 
   'date.today': 'сёння',

@@ -4,7 +4,7 @@ import { useNotifications } from '../context/NotificationsContext.jsx';
 import { vibrate } from '../utils/haptics.js';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { searchPresets } from '../data/presets.js';
-import { CATEGORIES, PERIODS, REMINDER_OPTIONS } from '../storage.js';
+import { CATEGORIES, PERIODS, REMINDER_OPTIONS, getCustomCategories } from '../storage.js';
 import { todayISO } from '../utils/dates.js';
 import { CURRENCIES } from '../utils/money.js';
 import PresetIcon from '../components/PresetIcon.jsx';
@@ -23,6 +23,7 @@ function emptyForm() {
     trialEndDate: '',
     reminderDays: 3,
     splitCount: 1,
+    oneTime: false,
     customColor: '',
     emoji: '',
     note: '',
@@ -38,6 +39,7 @@ export default function AddScreen({ onClose }) {
   const [activeCategory, setActiveCategory] = useState('all');
   const [selectedPreset, setSelectedPreset] = useState(null);
   const [form, setForm] = useState(emptyForm());
+  const [customCategories] = useState(() => getCustomCategories());
 
   const results = useMemo(() => {
     const bySearch = searchPresets(query);
@@ -77,6 +79,7 @@ export default function AddScreen({ onClose }) {
       trialEndDate: form.isTrial && form.trialEndDate ? form.trialEndDate : null,
       reminderDays: Number(form.reminderDays),
       splitCount: Number(form.splitCount) > 0 ? Number(form.splitCount) : 1,
+      oneTime: form.oneTime,
       iconKey: selectedPreset?.id ?? null,
       customColor: form.customColor || null,
       emoji: form.emoji || null,
@@ -231,6 +234,15 @@ export default function AddScreen({ onClose }) {
                   {t(`category.${c}`)}
                 </option>
               ))}
+              {customCategories.length > 0 && (
+                <optgroup label={t('settings.categories.title')}>
+                  {customCategories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </label>
 
@@ -244,6 +256,16 @@ export default function AddScreen({ onClose }) {
               required
             />
           </label>
+
+          <label className="toggle-row">
+            <span>{t('add.oneTime')}</span>
+            <input
+              type="checkbox"
+              checked={form.oneTime}
+              onChange={(e) => setField('oneTime', e.target.checked)}
+            />
+          </label>
+          {form.oneTime && <p className="settings-hint">{t('add.oneTime.hint')}</p>}
 
           <label className="toggle-row">
             <span>{t('add.trial')}</span>

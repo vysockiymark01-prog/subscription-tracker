@@ -12,8 +12,16 @@ const DRAG_THRESHOLD = 6;
 /**
  * Карточка подписки. Если передан onSwipeArchive — карточку можно свайпнуть
  * влево, чтобы открыть кнопку быстрого архивирования, без захода в детали.
+ * В режиме выбора (selectMode) свайп отключается, а тап переключает галочку.
  */
-export default function SubscriptionCard({ subscription, onClick, onSwipeArchive }) {
+export default function SubscriptionCard({
+  subscription,
+  onClick,
+  onSwipeArchive,
+  selectMode = false,
+  selected = false,
+  onToggleSelect,
+}) {
   const { t, tp } = useLanguage();
   const icon = getIconFor(subscription);
   const soon = subscription.status === 'active' && daysUntil(subscription.nextPaymentDate) <= 3;
@@ -22,7 +30,7 @@ export default function SubscriptionCard({ subscription, onClick, onSwipeArchive
   const [dragX, setDragX] = useState(0);
   const drag = useRef(null); // { startClientX, baseX, moved, openedVibrated }
 
-  const swipable = Boolean(onSwipeArchive);
+  const swipable = Boolean(onSwipeArchive) && !selectMode;
 
   function handlePointerDown(e) {
     if (!swipable) return;
@@ -47,6 +55,11 @@ export default function SubscriptionCard({ subscription, onClick, onSwipeArchive
   }
 
   function handleCardClick(e) {
+    if (selectMode) {
+      e.preventDefault();
+      onToggleSelect?.(subscription.id);
+      return;
+    }
     if (dragX !== 0) {
       // Карточка открыта свайпом — тап по ней закрывает панель, а не открывает детали.
       e.preventDefault();
@@ -75,7 +88,7 @@ export default function SubscriptionCard({ subscription, onClick, onSwipeArchive
         </button>
       )}
       <button
-        className={`subscription-card${soon ? ' subscription-card--soon' : ''}`}
+        className={`subscription-card${soon ? ' subscription-card--soon' : ''}${selectMode ? ' subscription-card--select' : ''}`}
         style={swipable ? { transform: `translateX(${dragX}px)`, touchAction: 'pan-y' } : undefined}
         onClick={handleCardClick}
         onPointerDown={handlePointerDown}
@@ -83,11 +96,15 @@ export default function SubscriptionCard({ subscription, onClick, onSwipeArchive
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
       >
+        {selectMode && (
+          <span className={`subscription-card__checkbox${selected ? ' subscription-card__checkbox--checked' : ''}`} aria-hidden="true" />
+        )}
         <PresetIcon color={icon.color} letter={icon.letter} emoji={icon.emoji} />
         <div className="subscription-card__info">
           <div className="subscription-card__name">{subscription.name}</div>
           <div className="subscription-card__meta">
             {formatMoney(subscription.price, subscription.currency)} / {t(`period.${subscription.period}.short`)}
+            {subscription.oneTime && ` · ${t('subscriptionCard.oneTime')}`}
             {isSplit && ` · ${t('subscriptionCard.splitShare')} ${formatMoney(splitPrice(subscription), subscription.currency)}`}
           </div>
         </div>

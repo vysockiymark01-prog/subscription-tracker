@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
@@ -11,6 +11,15 @@ export default function ArchiveScreen({ onOpenDetail }) {
   const { cancelledSubscriptions, pausedSubscriptions, restoreSubscription, resumeSubscription } = useAppData();
   const { convert, displayCurrency } = useExchangeRate();
   const { t } = useLanguage();
+  const [query, setQuery] = useState('');
+
+  const q = query.trim().toLowerCase();
+  const filteredPaused = q ? pausedSubscriptions.filter((s) => s.name.toLowerCase().includes(q)) : pausedSubscriptions;
+  const filteredCancelled = q
+    ? cancelledSubscriptions.filter((s) => s.name.toLowerCase().includes(q))
+    : cancelledSubscriptions;
+  const totalCount = pausedSubscriptions.length + cancelledSubscriptions.length;
+  const nothingFound = q && filteredPaused.length === 0 && filteredCancelled.length === 0;
 
   const savedPerYearByCurrency = useMemo(() => {
     const totals = {};
@@ -67,11 +76,23 @@ export default function ArchiveScreen({ onOpenDetail }) {
         </div>
       )}
 
-      {pausedSubscriptions.length > 0 && (
+      {totalCount > 3 && (
+        <input
+          className="input"
+          type="text"
+          placeholder={t('home.search')}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      )}
+
+      {nothingFound && <p className="add-catalog__empty">{t('home.searchEmpty')}</p>}
+
+      {filteredPaused.length > 0 && (
         <>
           <h2 className="archive-section-title">{t('archive.paused')}</h2>
           <div className="subscription-list">
-            {pausedSubscriptions.map((s) => {
+            {filteredPaused.map((s) => {
               const icon = getIconFor(s);
               return (
                 <div key={s.id} className="archive-item">
@@ -81,6 +102,7 @@ export default function ArchiveScreen({ onOpenDetail }) {
                       <div className="subscription-card__name">{s.name}</div>
                       <div className="subscription-card__meta">
                         {formatMoney(s.price, s.currency)} / {t(`period.${s.period}.short`)}
+                        {s.oneTime && ` · ${t('subscriptionCard.oneTime')}`}
                       </div>
                     </div>
                   </button>
@@ -94,11 +116,11 @@ export default function ArchiveScreen({ onOpenDetail }) {
         </>
       )}
 
-      {cancelledSubscriptions.length > 0 && (
+      {filteredCancelled.length > 0 && (
         <>
           <h2 className="archive-section-title">{t('archive.cancelled')}</h2>
           <div className="subscription-list">
-            {cancelledSubscriptions.map((s) => {
+            {filteredCancelled.map((s) => {
               const icon = getIconFor(s);
               return (
                 <div key={s.id} className="archive-item">
@@ -108,6 +130,7 @@ export default function ArchiveScreen({ onOpenDetail }) {
                       <div className="subscription-card__name">{s.name}</div>
                       <div className="subscription-card__meta">
                         {formatMoney(s.price, s.currency)} / {t(`period.${s.period}.short`)}
+                        {s.oneTime && ` · ${t('subscriptionCard.oneTime')}`}
                       </div>
                     </div>
                   </button>

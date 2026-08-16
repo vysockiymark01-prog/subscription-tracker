@@ -62,6 +62,7 @@ export function createSubscription(fields) {
     emoji: null,
     note: '',
     splitCount: 1,
+    oneTime: false,
     priceHistory: [],
     ...fields,
   };
@@ -79,13 +80,14 @@ export function getAllSubscriptions() {
 /**
  * Сдвигает nextPaymentDate вперёд для всех активных подписок, у которых
  * дата списания уже в прошлом (приложение не открывали дольше периода).
- * Вызывается один раз при открытии приложения.
+ * Вызывается один раз при открытии приложения. Разовые подписки (oneTime) не
+ * трогаем — они не продлеваются сами, пользователь отменяет их вручную.
  */
 export function reconcileNextPaymentDates() {
   const all = readAll();
   let changed = false;
   const updated = all.map((s) => {
-    if (s.status !== 'active') return s;
+    if (s.status !== 'active' || s.oneTime) return s;
     const nextDate = advanceOverdueDate(s.nextPaymentDate, s.period);
     if (nextDate === s.nextPaymentDate) return s;
     changed = true;
@@ -416,4 +418,79 @@ export function setLastTab(tab) {
   } catch {
     // не критично
   }
+}
+
+/**
+ * Массовое архивирование/удаление — для режима выбора нескольких подписок
+ * на главном экране разом.
+ */
+export function cancelMany(ids) {
+  const idSet = new Set(ids);
+  const all = readAll();
+  const updated = all.map((s) =>
+    idSet.has(s.id) ? { ...s, status: 'cancelled', cancelledAt: todayISO() } : s,
+  );
+  writeAll(updated);
+  return updated;
+}
+
+export function deleteMany(ids) {
+  const idSet = new Set(ids);
+  const all = readAll();
+  const filtered = all.filter((s) => !idSet.has(s.id));
+  writeAll(filtered);
+  return filtered;
+}
+
+const CUSTOM_CATEGORIES_KEY = 'custom-categories';
+
+/**
+ * Свои категории — в дополнение к фиксированному списку CATEGORIES.
+ * Хранятся как {id: 'custom:<uuid>', name}, id используется как значение
+ * поля category у подписки, чтобы не пересекаться с ключами переводов.
+ */
+export function getCustomCategories() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_CATEGORIES_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addCustomCategory(name) {
+  const trimmed = (name ?? '').trim();
+  if (!trimmed) return null;
+  const categories = getCustomCategories();
+  const existing = categories.find((c) => c.name.toLowerCase() === trimmed.toLowerCase());
+  if (existing) return existing;
+  const category = { id: `custom:${generateId()}`, name: trimmed };
+  try {
+    localStorage.setItem(CUSTOM_CATEGORIES_KEY, JSON.stringify([...categories, category]));
+  } catch {
+    // не критично
+  }
+  return category;
+}
+
+export function deleteCustomCategory(id) {
+  try {
+    const updated = getCustomCategories().filter((c) => c.id !== id);
+    localStorage.setItem(CUSTOM_CATEGORIES_KEY, JSON.stringify(updated));
+  } catch {
+    // не критично
+  }
+}
+
+/**
+ * Название категории для отображения: встроенные переводим через t(),
+ * свои — берём как есть из хранилища.
+ */
+export function getCategoryLabel(categoryId, t) {
+  if (typeof categoryId === 'string' && categoryId.startsWith('custom:')) {
+    const found = getCustomCategories().find((c) => c.id === categoryId);
+    return found?.name ?? categoryId;
+  }
+  return t(`category.${categoryId}`);
 }

@@ -38,6 +38,9 @@ export default function SettingsScreen() {
   const [backupDays, setBackupDays] = useState(() => storage.getBackupReminderDays());
   const [lastExportAt, setLastExportAt] = useState(() => storage.getLastExportAt());
 
+  const [customCategories, setCustomCategories] = useState(() => storage.getCustomCategories());
+  const [newCategoryName, setNewCategoryName] = useState('');
+
   const [lockEnabled, setLockEnabled] = useState(() => storage.isAppLockEnabled());
   const [hasPin, setHasPin] = useState(() => Boolean(storage.getPinHash()));
   const [biometricOn, setBiometricOn] = useState(() => storage.isBiometricEnabled());
@@ -88,6 +91,20 @@ export default function SettingsScreen() {
     };
     reader.readAsText(file);
     e.target.value = '';
+  }
+
+  function handleAddCategory(e) {
+    e.preventDefault();
+    const created = storage.addCustomCategory(newCategoryName);
+    if (created) {
+      setCustomCategories(storage.getCustomCategories());
+      setNewCategoryName('');
+    }
+  }
+
+  function handleDeleteCategory(id) {
+    storage.deleteCustomCategory(id);
+    setCustomCategories(storage.getCustomCategories());
   }
 
   function handleBackupDaysChange(value) {
@@ -214,6 +231,40 @@ export default function SettingsScreen() {
             )}
           </p>
         )}
+      </section>
+
+      <section className="settings-section">
+        <h2>{t('settings.categories.title')}</h2>
+        <p className="settings-hint">{t('settings.categories.hint')}</p>
+        {customCategories.length > 0 && (
+          <ul className="custom-category-list">
+            {customCategories.map((c) => (
+              <li key={c.id} className="custom-category-list__item">
+                <span>{c.name}</span>
+                <button
+                  type="button"
+                  className="custom-category-list__remove"
+                  onClick={() => handleDeleteCategory(c.id)}
+                  aria-label={t('settings.categories.remove')}
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <form className="settings-add-category" onSubmit={handleAddCategory}>
+          <input
+            className="input"
+            type="text"
+            placeholder={t('settings.categories.placeholder')}
+            value={newCategoryName}
+            onChange={(e) => setNewCategoryName(e.target.value)}
+          />
+          <button className="btn btn--secondary" type="submit" disabled={!newCategoryName.trim()}>
+            {t('settings.categories.add')}
+          </button>
+        </form>
       </section>
 
       <section className="settings-section">

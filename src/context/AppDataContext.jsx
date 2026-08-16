@@ -52,6 +52,18 @@ export function AppDataProvider({ children }) {
     return updated;
   }, [refresh]);
 
+  const cancelMany = useCallback((ids) => {
+    const updated = storage.cancelMany(ids);
+    refresh();
+    return updated;
+  }, [refresh]);
+
+  const deleteMany = useCallback((ids) => {
+    const result = storage.deleteMany(ids);
+    refresh();
+    return result;
+  }, [refresh]);
+
   const importData = useCallback((json) => {
     const result = storage.importData(json);
     refresh();
@@ -97,6 +109,8 @@ export function AppDataProvider({ children }) {
     restoreSubscription,
     pauseSubscription,
     resumeSubscription,
+    cancelMany,
+    deleteMany,
     exportData: storage.exportData,
     importData,
     importCsv,

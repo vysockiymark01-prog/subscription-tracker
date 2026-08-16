@@ -39,8 +39,15 @@ export default {
   'home.sort.priceDesc': 'Алдымен қымбаттары',
   'home.sort.name': 'Атауы бойынша (А-Я)',
   'home.swipeArchive': 'Мұрағатқа',
+  'home.select': 'Таңдау',
+  'home.selectedCount': 'Таңдалды: {count}',
+  'home.bulkArchive': 'Мұрағатқа',
+  'home.bulkDelete': 'Жою',
+  'home.bulkDeleteConfirm': 'Таңдалған жазылымдарды қалпына келтіру мүмкіндігінсіз жоясыз ба?',
+  'home.bulkDeleteYes': 'Иә, жою',
 
   'subscriptionCard.splitShare': 'менің үлесім',
+  'subscriptionCard.oneTime': 'бір реттік',
 
   'stats.empty.title': 'Әзірге деректер жоқ',
   'stats.empty.text': 'Жазылым қосқаннан кейін статистика пайда болады',
@@ -77,6 +84,12 @@ export default {
   'settings.currency.ratesOn': 'Бағам күні:',
   'settings.currency.error': 'Бағамды алу мүмкін болмады — қорытындылар уақытша бөлек көрсетіледі.',
   'settings.currency.refresh': 'Бағамды жаңарту',
+
+  'settings.categories.title': 'Менің санаттарым',
+  'settings.categories.hint': 'Өз санаттарыңыз жазылымды қосу және өңдеу кезінде, сондай-ақ статистикада көрінеді.',
+  'settings.categories.placeholder': 'Санат атауы',
+  'settings.categories.add': 'Қосу',
+  'settings.categories.remove': 'Санатты жою',
 
   'settings.backup.title': 'Сақтық көшірме туралы еске салу',
   'settings.backup.hint': 'Деректер тек осы құрылғыда сақталады. Ұзақ уақыт экспорттамасаңыз, хабарландыру жібереміз.',
@@ -125,6 +138,8 @@ export default {
   'add.trial': 'Сынақ мерзімі',
   'add.trialEnd': 'Сынақ мерзімінің аяқталу күні',
   'add.remind': 'Еске салу мерзімі',
+  'add.oneTime': 'Бір реттік — автоматты түрде ұзартылмайды',
+  'add.oneTime.hint': 'Төлем күнінен кейін күн өздігінен жылжымайды — жазылым аяқталған соң оны бас тартуды немесе мұрағаттауды ұмытпаңыз.',
   'unit.daysShort': 'күн',
 
   'date.today': 'бүгін',

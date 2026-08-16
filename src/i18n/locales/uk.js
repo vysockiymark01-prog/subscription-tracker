@@ -39,8 +39,15 @@ export default {
   'home.sort.priceDesc': 'Спочатку дорожчі',
   'home.sort.name': 'За назвою (А-Я)',
   'home.swipeArchive': 'В архів',
+  'home.select': 'Вибрати',
+  'home.selectedCount': 'Вибрано: {count}',
+  'home.bulkArchive': 'В архів',
+  'home.bulkDelete': 'Видалити',
+  'home.bulkDeleteConfirm': 'Видалити вибрані підписки без можливості відновлення?',
+  'home.bulkDeleteYes': 'Так, видалити',
 
   'subscriptionCard.splitShare': 'моя частка',
+  'subscriptionCard.oneTime': 'разово',
 
   'stats.empty.title': 'Поки немає даних',
   'stats.empty.text': 'Статистика зʼявиться після додавання підписок',
@@ -77,6 +84,12 @@ export default {
   'settings.currency.ratesOn': 'Курс на',
   'settings.currency.error': 'Не вдалося отримати курс — підсумки тимчасово показуються окремо.',
   'settings.currency.refresh': 'Оновити курс',
+
+  'settings.categories.title': 'Мої категорії',
+  'settings.categories.hint': 'Власні категорії зʼявляться в списку при додаванні й редагуванні підписки, а також у статистиці.',
+  'settings.categories.placeholder': 'Назва категорії',
+  'settings.categories.add': 'Додати',
+  'settings.categories.remove': 'Видалити категорію',
 
   'settings.backup.title': 'Нагадування про резервну копію',
   'settings.backup.hint': 'Дані зберігаються лише на цьому пристрої. Надішлемо сповіщення, якщо давно не експортували їх.',
@@ -125,6 +138,8 @@ export default {
   'add.trial': 'Пробний період',
   'add.trialEnd': 'Дата закінчення тріалу',
   'add.remind': 'Нагадати за',
+  'add.oneTime': 'Разова — не продовжувати автоматично',
+  'add.oneTime.hint': 'Після дати платежу дата не зсунеться сама — не забудьте скасувати або архівувати підписку, коли вона закінчиться.',
   'unit.daysShort': 'дн.',
 
   'date.today': 'сьогодні',

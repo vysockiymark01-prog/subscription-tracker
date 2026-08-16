@@ -15,11 +15,14 @@ const SORTERS = {
 };
 
 export default function HomeScreen({ onAdd, onOpenDetail }) {
-  const { activeSubscriptions, cancelSubscription } = useAppData();
+  const { activeSubscriptions, cancelSubscription, cancelMany, deleteMany } = useAppData();
   const { convert, displayCurrency } = useExchangeRate();
   const { t } = useLanguage();
   const [query, setQuery] = useState('');
   const [sortBy, setSortBy] = useState('date');
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [confirmingBulkDelete, setConfirmingBulkDelete] = useState(false);
 
   const sorted = useMemo(
     () => [...activeSubscriptions].sort(SORTERS[sortBy] ?? SORTERS.date),
@@ -35,6 +38,39 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
   function handleSwipeArchive(id) {
     vibrate();
     cancelSubscription(id);
+  }
+
+  function toggleSelectMode() {
+    setSelectMode((v) => !v);
+    setSelectedIds(new Set());
+    setConfirmingBulkDelete(false);
+  }
+
+  function toggleSelected(id) {
+    vibrate(10);
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function handleBulkArchive() {
+    if (selectedIds.size === 0) return;
+    vibrate();
+    cancelMany([...selectedIds]);
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  }
+
+  function handleBulkDelete() {
+    if (selectedIds.size === 0) return;
+    vibrate([20, 40, 20]);
+    deleteMany([...selectedIds]);
+    setSelectMode(false);
+    setSelectedIds(new Set());
+    setConfirmingBulkDelete(false);
   }
 
   // Суммы считаются отдельно по каждой валюте — конвертации нет, складывать их напрямую нельзя.
@@ -116,6 +152,48 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
         </div>
       )}
 
+      {sorted.length > 1 && (
+        <div className="home-select-bar">
+          {!selectMode ? (
+            <button className="home-select-bar__toggle" onClick={toggleSelectMode}>
+              {t('home.select')}
+            </button>
+          ) : (
+            <>
+              <span className="home-select-bar__count">
+                {t('home.selectedCount', { count: selectedIds.size })}
+              </span>
+              <div className="home-select-bar__actions">
+                <button
+                  className="btn btn--secondary"
+                  onClick={handleBulkArchive}
+                  disabled={selectedIds.size === 0}
+                >
+                  {t('home.bulkArchive')}
+                </button>
+                {!confirmingBulkDelete ? (
+                  <button
+                    className="btn btn--danger"
+                    onClick={() => setConfirmingBulkDelete(true)}
+                    disabled={selectedIds.size === 0}
+                  >
+                    {t('home.bulkDelete')}
+                  </button>
+                ) : (
+                  <button className="btn btn--danger" onClick={handleBulkDelete}>
+                    {t('home.bulkDeleteYes')}
+                  </button>
+                )}
+                <button className="btn btn--secondary" onClick={toggleSelectMode}>
+                  {t('common.cancel')}
+                </button>
+              </div>
+              {confirmingBulkDelete && <p className="home-select-bar__confirm">{t('home.bulkDeleteConfirm')}</p>}
+            </>
+          )}
+        </div>
+      )}
+
       {filtered.length === 0 ? (
         <p className="add-catalog__empty">{t('home.searchEmpty')}</p>
       ) : (
@@ -126,6 +204,9 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
               subscription={s}
               onClick={() => onOpenDetail(s.id)}
               onSwipeArchive={handleSwipeArchive}
+              selectMode={selectMode}
+              selected={selectedIds.has(s.id)}
+              onToggleSelect={toggleSelected}
             />
           ))}
         </div>

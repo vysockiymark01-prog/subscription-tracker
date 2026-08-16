@@ -39,8 +39,15 @@ export default {
   'home.sort.priceDesc': 'Avval qimmatlari',
   'home.sort.name': "Nomi bo'yicha (A-Z)",
   'home.swipeArchive': 'Arxivga',
+  'home.select': 'Tanlash',
+  'home.selectedCount': 'Tanlandi: {count}',
+  'home.bulkArchive': 'Arxivga',
+  'home.bulkDelete': "O'chirish",
+  'home.bulkDeleteConfirm': "Tanlangan obunalarni qayta tiklab bo'lmaydigan tarzda o'chirasizmi?",
+  'home.bulkDeleteYes': "Ha, o'chirish",
 
   'subscriptionCard.splitShare': 'mening ulushim',
+  'subscriptionCard.oneTime': 'bir martalik',
 
   'stats.empty.title': "Hozircha ma'lumot yo'q",
   'stats.empty.text': "Obuna qo'shgandan keyin statistika paydo bo'ladi",
@@ -77,6 +84,12 @@ export default {
   'settings.currency.ratesOn': 'Kurs sanasi:',
   'settings.currency.error': "Kursni olib bo'lmadi — jami vaqtincha alohida ko'rsatiladi.",
   'settings.currency.refresh': 'Kursni yangilash',
+
+  'settings.categories.title': 'Mening kategoriyalarim',
+  'settings.categories.hint': "O'z kategoriyalaringiz obuna qo'shish va tahrirlashda, shuningdek statistikada ko'rinadi.",
+  'settings.categories.placeholder': 'Kategoriya nomi',
+  'settings.categories.add': "Qo'shish",
+  'settings.categories.remove': "Kategoriyani o'chirish",
 
   'settings.backup.title': 'Zaxira nusxa haqida eslatma',
   'settings.backup.hint': "Ma'lumotlar faqat shu qurilmada saqlanadi. Uzoq vaqt eksport qilmasangiz, bildirishnoma yuboramiz.",
@@ -125,6 +138,8 @@ export default {
   'add.trial': 'Sinov muddati',
   'add.trialEnd': 'Sinov muddati tugash sanasi',
   'add.remind': 'Necha kun oldin eslatish',
+  'add.oneTime': "Bir martalik — avtomatik uzaytirilmaydi",
+  'add.oneTime.hint': "To'lov sanasidan keyin sana o'zi surilmaydi — obuna tugaganda uni bekor qilish yoki arxivlashni unutmang.",
   'unit.daysShort': 'kun',
 
   'date.today': 'bugun',

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
-import { CATEGORIES } from '../storage.js';
+import { CATEGORIES, getCategoryLabel } from '../storage.js';
 import { getIconFor } from '../data/presets.js';
 import { toMonthly, formatMoney, splitPrice, sumConverted } from '../utils/money.js';
 import { getLifetimeSpend } from '../utils/insights.js';
@@ -27,9 +27,10 @@ export default function StatsScreen({ onOpenYearReview }) {
       if (!totals[key]) totals[key] = { category: s.category, currency, total: 0 };
       totals[key].total += amount;
     }
-    return CATEGORIES.flatMap((c) =>
-      Object.values(totals).filter((t2) => t2.category === c),
-    );
+    // Сначала фиксированные категории по порядку CATEGORIES, затем свои —
+    // в порядке появления в данных.
+    const allIds = [...new Set([...CATEGORIES, ...Object.values(totals).map((v) => v.category)])];
+    return allIds.flatMap((c) => Object.values(totals).filter((t2) => t2.category === c));
   }, [activeSubscriptions, convert, displayCurrency]);
 
   const maxCategoryTotal = useMemo(() => Math.max(1, ...byCategory.map((c) => c.total)), [byCategory]);
@@ -128,7 +129,7 @@ export default function StatsScreen({ onOpenYearReview }) {
           {byCategory.map(({ category, currency, total }) => (
             <div key={`${category}-${currency}`} className="category-bar">
               <div className="category-bar__label">
-                <span>{t(`category.${category}`)}</span>
+                <span>{getCategoryLabel(category, t)}</span>
                 <span>{formatMoney(total, currency)}</span>
               </div>
               <div className="category-bar__track">

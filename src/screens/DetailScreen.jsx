@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
-import { CATEGORIES, PERIODS, REMINDER_OPTIONS } from '../storage.js';
+import { CATEGORIES, PERIODS, REMINDER_OPTIONS, getCustomCategories } from '../storage.js';
 import PresetIcon from '../components/PresetIcon.jsx';
 import ColorPicker from '../components/ColorPicker.jsx';
 import EmojiPicker from '../components/EmojiPicker.jsx';
@@ -24,6 +24,7 @@ export default function DetailScreen({ id, onClose }) {
   const subscription = getById(id);
   const [form, setForm] = useState(subscription ? { ...subscription } : null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [customCategories] = useState(() => getCustomCategories());
 
   if (!subscription || !form) {
     return (
@@ -62,6 +63,7 @@ export default function DetailScreen({ id, onClose }) {
       trialEndDate: form.isTrial && form.trialEndDate ? form.trialEndDate : null,
       reminderDays: Number(form.reminderDays),
       splitCount: Number(form.splitCount) > 0 ? Number(form.splitCount) : 1,
+      oneTime: form.oneTime,
       customColor: form.customColor || null,
       emoji: form.emoji || null,
       note: form.note || '',
@@ -208,6 +210,15 @@ export default function DetailScreen({ id, onClose }) {
                 {t(`category.${c}`)}
               </option>
             ))}
+            {customCategories.length > 0 && (
+              <optgroup label={t('settings.categories.title')}>
+                {customCategories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
         </label>
 
@@ -242,6 +253,16 @@ export default function DetailScreen({ id, onClose }) {
             )}
           </p>
         )}
+
+        <label className="toggle-row">
+          <span>{t('add.oneTime')}</span>
+          <input
+            type="checkbox"
+            checked={Boolean(form.oneTime)}
+            onChange={(e) => setField('oneTime', e.target.checked)}
+          />
+        </label>
+        {form.oneTime && <p className="settings-hint">{t('add.oneTime.hint')}</p>}
 
         <label className="toggle-row">
           <span>{t('add.trial')}</span>
