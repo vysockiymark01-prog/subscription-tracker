@@ -3,7 +3,7 @@ export default {
   'nav.home': 'Bosh sahifa',
   'nav.stats': 'Statistika',
   'nav.calendar': 'Kalendar',
-  'nav.reminders': 'Eslatmalar',
+  'nav.reminders': 'Eslatma',
   'nav.archive': 'Arxiv',
   'nav.settings': 'Sozlamalar',
 

@@ -1,12 +1,12 @@
 import { useLanguage } from '../context/LanguageContext.jsx';
 
 const TABS = [
-  { id: 'home', key: 'nav.home' },
-  { id: 'stats', key: 'nav.stats' },
-  { id: 'calendar', key: 'nav.calendar' },
-  { id: 'reminders', key: 'nav.reminders' },
-  { id: 'archive', key: 'nav.archive' },
-  { id: 'settings', key: 'nav.settings' },
+  { id: 'home', key: 'nav.home', icon: '🏠' },
+  { id: 'stats', key: 'nav.stats', icon: '📊' },
+  { id: 'calendar', key: 'nav.calendar', icon: '📅' },
+  { id: 'reminders', key: 'nav.reminders', icon: '⏰' },
+  { id: 'archive', key: 'nav.archive', icon: '🗄️' },
+  { id: 'settings', key: 'nav.settings', icon: '⚙️' },
 ];
 
 export default function BottomNav({ active, onChange }) {
@@ -19,7 +19,10 @@ export default function BottomNav({ active, onChange }) {
           className={`bottom-nav__item${active === tab.id ? ' bottom-nav__item--active' : ''}`}
           onClick={() => onChange(tab.id)}
         >
-          {t(tab.key)}
+          <span className="bottom-nav__icon" aria-hidden="true">
+            {tab.icon}
+          </span>
+          <span className="bottom-nav__label">{t(tab.key)}</span>
         </button>
       ))}
     </nav>

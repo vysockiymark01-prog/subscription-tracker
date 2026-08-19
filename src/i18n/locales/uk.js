@@ -3,7 +3,7 @@ export default {
   'nav.home': 'Головна',
   'nav.stats': 'Статистика',
   'nav.calendar': 'Календар',
-  'nav.reminders': 'Нагадування',
+  'nav.reminders': 'Справи',
   'nav.archive': 'Архів',
   'nav.settings': 'Налаштування',
 

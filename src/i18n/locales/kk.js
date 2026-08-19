@@ -3,7 +3,7 @@ export default {
   'nav.home': 'Басты бет',
   'nav.stats': 'Статистика',
   'nav.calendar': 'Күнтізбе',
-  'nav.reminders': 'Еске салулар',
+  'nav.reminders': 'Естелік',
   'nav.archive': 'Мұрағат',
   'nav.settings': 'Баптаулар',
 
