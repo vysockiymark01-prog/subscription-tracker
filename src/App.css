@@ -97,8 +97,9 @@
   flex: 1;
   border: none;
   background: none;
-  padding: 12px 4px;
-  font-size: 12px;
+  padding: 10px 2px;
+  font-size: 10.5px;
+  line-height: 1.2;
   color: var(--text);
 }
 
@@ -1270,4 +1271,33 @@
 
 .settings-add-category .input {
   flex: 1;
+}
+
+/* --- Превью ближайших дат в форме напоминания --- */
+
+.reminder-preview {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.reminder-preview__label {
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.reminder-preview__dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.reminder-preview__date {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
 }

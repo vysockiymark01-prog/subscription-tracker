@@ -24,6 +24,15 @@ export function todayISO() {
 }
 
 /**
+ * Прибавляет (или отнимает, если days отрицательное) целое число дней к дате.
+ */
+export function addDays(dateStr, days) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return toLocalISODate(d);
+}
+
+/**
  * Разница в днях между датой и сегодня. Отрицательное число — дата в прошлом.
  */
 export function daysUntil(dateStr) {

@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
+import { useReminders } from '../context/RemindersContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { addPeriod, todayISO } from '../utils/dates.js';
+import { getOccurrencesInRange } from '../utils/reminderDates.js';
 import { formatMoney } from '../utils/money.js';
 import { getIconFor } from '../data/presets.js';
 import PresetIcon from '../components/PresetIcon.jsx';
@@ -38,6 +40,7 @@ function occurrencesInMonth(subscription, year, month) {
 
 export default function CalendarScreen() {
   const { activeSubscriptions } = useAppData();
+  const { reminders } = useReminders();
   const { t, language } = useLanguage();
   const today = todayISO();
   const now = new Date();
@@ -51,11 +54,18 @@ export default function CalendarScreen() {
     const map = {};
     for (const s of activeSubscriptions) {
       for (const date of occurrencesInMonth(s, cursor.year, cursor.month)) {
-        (map[date] ??= []).push(s);
+        (map[date] ??= []).push({ type: 'subscription', data: s });
+      }
+    }
+    const monthStart = toIsoDate(cursor.year, cursor.month, 1);
+    const monthEnd = toIsoDate(cursor.year, cursor.month, new Date(cursor.year, cursor.month + 1, 0).getDate());
+    for (const r of reminders) {
+      for (const date of getOccurrencesInRange(r, monthStart, monthEnd)) {
+        (map[date] ??= []).push({ type: 'reminder', data: r });
       }
     }
     return map;
-  }, [activeSubscriptions, cursor]);
+  }, [activeSubscriptions, reminders, cursor]);
 
   const weeks = useMemo(() => {
     const firstOfMonth = new Date(cursor.year, cursor.month, 1);
@@ -151,14 +161,16 @@ export default function CalendarScreen() {
           <p className="calendar-day-events__empty">{t('calendar.selectedDay.empty')}</p>
         ) : (
           <div className="subscription-list">
-            {selectedEvents.map((s) => {
-              const icon = getIconFor(s);
+            {selectedEvents.map(({ type, data }) => {
+              const icon = getIconFor(data);
               return (
-                <div key={s.id} className="subscription-card">
+                <div key={`${type}-${data.id}`} className="subscription-card">
                   <PresetIcon color={icon.color} letter={icon.letter} emoji={icon.emoji} />
                   <div className="subscription-card__info">
-                    <div className="subscription-card__name">{s.name}</div>
-                    <div className="subscription-card__meta">{formatMoney(s.price, s.currency)}</div>
+                    <div className="subscription-card__name">{data.name}</div>
+                    <div className="subscription-card__meta">
+                      {type === 'subscription' ? formatMoney(data.price, data.currency) : t('reminders.calendarTag')}
+                    </div>
                   </div>
                 </div>
               );

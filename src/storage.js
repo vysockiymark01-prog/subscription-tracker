@@ -397,7 +397,7 @@ export function setOnboardingCompleted() {
 }
 
 const LAST_TAB_KEY = 'last-tab';
-const VALID_TABS = ['home', 'stats', 'calendar', 'archive', 'settings'];
+const VALID_TABS = ['home', 'stats', 'calendar', 'reminders', 'archive', 'settings'];
 
 /**
  * Последняя открытая вкладка нижней навигации — чтобы обновление страницы
@@ -493,4 +493,81 @@ export function getCategoryLabel(categoryId, t) {
     return found?.name ?? categoryId;
   }
   return t(`category.${categoryId}`);
+}
+
+// --- Напоминания (не подписки: без цены и валюты, просто "раз в N дней" от
+// даты начала, с необязательной датой окончания). Отдельное хранилище. ---
+
+const REMINDERS_KEY = 'reminders';
+
+function readAllReminders() {
+  let raw;
+  try {
+    raw = localStorage.getItem(REMINDERS_KEY);
+  } catch {
+    return [];
+  }
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeAllReminders(reminders) {
+  try {
+    localStorage.setItem(REMINDERS_KEY, JSON.stringify(reminders));
+  } catch {
+    // не критично
+  }
+}
+
+export function createReminder(fields) {
+  return {
+    id: generateId(),
+    name: '',
+    intervalDays: 7,
+    startDate: todayISO(),
+    endDate: null,
+    reminderDays: 0, // 0 — напомнить в день события
+    emoji: null,
+    customColor: null,
+    createdAt: todayISO(),
+    ...fields,
+  };
+}
+
+export function getAllReminders() {
+  return readAllReminders();
+}
+
+export function getReminderById(id) {
+  return readAllReminders().find((r) => r.id === id) ?? null;
+}
+
+export function addReminder(fields) {
+  const reminder = createReminder(fields);
+  const all = readAllReminders();
+  all.push(reminder);
+  writeAllReminders(all);
+  return reminder;
+}
+
+export function updateReminder(id, patch) {
+  const all = readAllReminders();
+  const index = all.findIndex((r) => r.id === id);
+  if (index === -1) return null;
+  const updated = { ...all[index], ...patch, id };
+  all[index] = updated;
+  writeAllReminders(all);
+  return updated;
+}
+
+export function deleteReminder(id) {
+  const all = readAllReminders();
+  const filtered = all.filter((r) => r.id !== id);
+  writeAllReminders(filtered);
+  return filtered.length !== all.length;
 }

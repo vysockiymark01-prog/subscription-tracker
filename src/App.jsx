@@ -3,6 +3,7 @@ import './App.css';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { LanguageProvider } from './context/LanguageContext.jsx';
 import { AppDataProvider } from './context/AppDataContext.jsx';
+import { RemindersProvider } from './context/RemindersContext.jsx';
 import { NotificationsProvider } from './context/NotificationsContext.jsx';
 import { ExchangeRateProvider } from './context/ExchangeRateContext.jsx';
 import BottomNav from './components/BottomNav.jsx';
@@ -10,6 +11,8 @@ import NotificationPrimer from './components/NotificationPrimer.jsx';
 import HomeScreen from './screens/HomeScreen.jsx';
 import StatsScreen from './screens/StatsScreen.jsx';
 import CalendarScreen from './screens/CalendarScreen.jsx';
+import RemindersScreen from './screens/RemindersScreen.jsx';
+import ReminderFormScreen from './screens/ReminderFormScreen.jsx';
 import ArchiveScreen from './screens/ArchiveScreen.jsx';
 import SettingsScreen from './screens/SettingsScreen.jsx';
 import AddScreen from './screens/AddScreen.jsx';
@@ -33,6 +36,8 @@ function AppShell() {
   const openAdd = () => setOverlay({ type: 'add' });
   const openDetail = (id) => setOverlay({ type: 'detail', id });
   const openYearReview = () => setOverlay({ type: 'year-review' });
+  const openAddReminder = () => setOverlay({ type: 'reminder-form' });
+  const openReminderDetail = (id) => setOverlay({ type: 'reminder-form', id });
   const closeOverlay = () => setOverlay(null);
 
   // Обработка ярлыков приложения (долгое нажатие на иконку на Android):
@@ -43,7 +48,7 @@ function AppShell() {
     const action = params.get('action');
     const screen = params.get('screen');
     if (action === 'add') setOverlay({ type: 'add' });
-    if (['home', 'stats', 'calendar', 'archive', 'settings'].includes(screen)) setTab(screen);
+    if (['home', 'stats', 'calendar', 'reminders', 'archive', 'settings'].includes(screen)) setTab(screen);
     if (action || screen) window.history.replaceState(null, '', window.location.pathname);
   }, []);
 
@@ -53,6 +58,7 @@ function AppShell() {
         {tab === 'home' && <HomeScreen onAdd={openAdd} onOpenDetail={openDetail} />}
         {tab === 'stats' && <StatsScreen onOpenYearReview={openYearReview} />}
         {tab === 'calendar' && <CalendarScreen />}
+        {tab === 'reminders' && <RemindersScreen onAdd={openAddReminder} onOpenDetail={openReminderDetail} />}
         {tab === 'archive' && <ArchiveScreen onOpenDetail={openDetail} />}
         {tab === 'settings' && <SettingsScreen />}
       </main>
@@ -62,6 +68,7 @@ function AppShell() {
       {overlay?.type === 'add' && <AddScreen onClose={closeOverlay} />}
       {overlay?.type === 'detail' && <DetailScreen id={overlay.id} onClose={closeOverlay} />}
       {overlay?.type === 'year-review' && <YearReviewScreen onClose={closeOverlay} />}
+      {overlay?.type === 'reminder-form' && <ReminderFormScreen id={overlay.id} onClose={closeOverlay} />}
 
       <NotificationPrimer />
     </div>
@@ -88,11 +95,13 @@ export default function App() {
     <ThemeProvider>
       <LanguageProvider>
         <AppDataProvider>
-          <NotificationsProvider>
-            <ExchangeRateProvider>
-              <Gate />
-            </ExchangeRateProvider>
-          </NotificationsProvider>
+          <RemindersProvider>
+            <NotificationsProvider>
+              <ExchangeRateProvider>
+                <Gate />
+              </ExchangeRateProvider>
+            </NotificationsProvider>
+          </RemindersProvider>
         </AppDataProvider>
       </LanguageProvider>
     </ThemeProvider>
