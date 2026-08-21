@@ -30,26 +30,32 @@ function writeCache(entry) {
  * одна единица валюты. Кэшируется на 12 часов, чтобы не дёргать сеть при каждом рендере.
  */
 export async function fetchRatesToRub({ force = false } = {}) {
-  if (!force) {
-    const cached = readCache();
-    if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-      return cached.rates;
-    }
+  const cached = readCache();
+  if (!force && cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
+    return cached.rates;
   }
 
-  const res = await fetch(CBR_URL);
-  if (!res.ok) throw new Error(`Курс ЦБ недоступен: ${res.status}`);
-  const data = await res.json();
+  try {
+    const res = await fetch(CBR_URL);
+    if (!res.ok) throw new Error(`Курс ЦБ недоступен: ${res.status}`);
+    const data = await res.json();
 
-  const rates = { RUB: 1 };
-  for (const [code, info] of Object.entries(data.Valute ?? {})) {
-    if (info?.Value && info?.Nominal) {
-      rates[code] = info.Value / info.Nominal;
+    const rates = { RUB: 1 };
+    for (const [code, info] of Object.entries(data.Valute ?? {})) {
+      if (info?.Value && info?.Nominal) {
+        rates[code] = info.Value / info.Nominal;
+      }
     }
-  }
 
-  writeCache({ fetchedAt: Date.now(), rates, date: data.Date });
-  return rates;
+    writeCache({ fetchedAt: Date.now(), rates, date: data.Date });
+    return rates;
+  } catch (err) {
+    // Нет сети (офлайн) или сервис недоступен — лучше показать чуть устаревший
+    // курс, чем ничего. Если сохранённого курса вообще никогда не было — тогда
+    // действительно нечего показать, пробрасываем ошибку дальше.
+    if (cached) return cached.rates;
+    throw err;
+  }
 }
 
 export function getCachedRatesDate() {
