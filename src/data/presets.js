@@ -55,6 +55,15 @@ export const PRESETS = [
   { id: 'adobe-cc', name: 'Adobe Creative Cloud', price: 2999, category: 'software', color: '#FF0000', letter: 'A', cancelUrl: 'https://account.adobe.com', cancelHint: 'Adobe Account → Планы и оплата' },
   { id: 'canva-pro', name: 'Canva Pro', price: 999, category: 'software', color: '#00C4CC', letter: 'C', cancelUrl: 'https://www.canva.com/settings/billing', cancelHint: 'Настройки аккаунта Canva → Billing' },
   { id: 'skillbox', name: 'Skillbox', price: 2999, category: 'education', color: '#7B61FF', letter: 'S', cancelUrl: 'https://skillbox.ru', cancelHint: 'Личный кабинет → Мои курсы → Подписка' },
+
+  // VPN
+  { id: 'sota-vpn', name: 'Sota VPN', price: 399, currency: 'RUB', category: 'software', color: '#F2C230', letter: 'S', cancelUrl: 'https://sotavpn.info', cancelHint: 'Личный кабинет на sotavpn.info → Подписка' },
+  { id: 'planet-vpn', name: 'Planet VPN', price: 799, currency: 'RUB', category: 'software', color: '#2E9E5B', letter: 'P', cancelUrl: 'https://planetvpn.com', cancelHint: 'Личный кабинет Planet VPN → Подписка' },
+  { id: 'hidemyname-vpn', name: 'HideMy.name VPN', price: 390, currency: 'RUB', category: 'software', color: '#1E1E2E', letter: 'H', cancelUrl: 'https://hidemy.name', cancelHint: 'Личный кабинет hidemy.name → Подписка' },
+  { id: 'amnezia-premium', name: 'Amnezia Premium', price: 4, currency: 'USD', category: 'software', color: '#8B5CF6', letter: 'A', cancelUrl: 'https://amnezia.org/premium', cancelHint: 'Личный кабинет Amnezia Pay → Подписка' },
+  { id: 'nordvpn', name: 'NordVPN', price: 12.99, currency: 'USD', category: 'software', color: '#4687FF', letter: 'N', cancelUrl: 'https://my.nordaccount.com', cancelHint: 'Nord Account → Billing' },
+  { id: 'expressvpn', name: 'ExpressVPN', price: 13.99, currency: 'USD', category: 'software', color: '#DA3940', letter: 'E', cancelUrl: 'https://www.expressvpn.com/subscriptions', cancelHint: 'My Account → Subscriptions' },
+  { id: 'surfshark', name: 'Surfshark', price: 16.45, currency: 'USD', category: 'software', color: '#1EBFBF', letter: 'S', cancelUrl: 'https://my.surfshark.com', cancelHint: 'Account → Manage subscription' },
 ];
 
 export function searchPresets(query) {

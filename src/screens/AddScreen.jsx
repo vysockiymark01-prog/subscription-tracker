@@ -48,7 +48,13 @@ export default function AddScreen({ onClose }) {
 
   function openPreset(preset) {
     setSelectedPreset(preset);
-    setForm({ ...emptyForm(), name: preset.name, price: preset.price, category: preset.category });
+    setForm({
+      ...emptyForm(),
+      name: preset.name,
+      price: preset.price,
+      category: preset.category,
+      currency: preset.currency || 'RUB',
+    });
     setStep('form');
   }
 
