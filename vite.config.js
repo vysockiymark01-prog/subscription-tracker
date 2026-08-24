@@ -9,6 +9,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Регистрируем service worker вручную (main.jsx) — так можно принудительно
+      // проверять обновления сразу и периодически, а не полагаться на то, что
+      // браузер сам решит проверить (по умолчанию это может не происходить сутками,
+      // из-за чего новые версии не доходили до пользователей после деплоя).
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Трекер подписок',
