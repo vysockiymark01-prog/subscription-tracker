@@ -108,7 +108,9 @@ export default function SubscriptionCard({
             {isSplit && ` · ${t('subscriptionCard.splitShare')} ${formatMoney(splitPrice(subscription), subscription.currency)}`}
           </div>
         </div>
-        <div className="subscription-card__due">{formatDaysUntil(subscription.nextPaymentDate, t, tp)}</div>
+        <div className="subscription-card__due" style={swipable ? { opacity: dragX === 0 ? 1 : 0 } : undefined}>
+          {formatDaysUntil(subscription.nextPaymentDate, t, tp)}
+        </div>
       </button>
     </div>
   );
