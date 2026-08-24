@@ -21,6 +21,19 @@ export default function ArchiveScreen({ onOpenDetail }) {
   const totalCount = pausedSubscriptions.length + cancelledSubscriptions.length;
   const nothingFound = q && filteredPaused.length === 0 && filteredCancelled.length === 0;
 
+  // После возврата в активные дата следующего списания почти всегда устарела
+  // (подписку не продлевали, пока она была в архиве) — сразу открываем детали,
+  // чтобы её поправить одним движением, а не искать потом отдельно.
+  function handleResume(id) {
+    resumeSubscription(id);
+    onOpenDetail(id);
+  }
+
+  function handleRestore(id) {
+    restoreSubscription(id);
+    onOpenDetail(id);
+  }
+
   const savedPerYearByCurrency = useMemo(() => {
     const totals = {};
     for (const s of cancelledSubscriptions) {
@@ -106,7 +119,7 @@ export default function ArchiveScreen({ onOpenDetail }) {
                       </div>
                     </div>
                   </button>
-                  <button className="btn btn--secondary" onClick={() => resumeSubscription(s.id)}>
+                  <button className="btn btn--secondary" onClick={() => handleResume(s.id)}>
                     {t('archive.resume')}
                   </button>
                 </div>
@@ -134,7 +147,7 @@ export default function ArchiveScreen({ onOpenDetail }) {
                       </div>
                     </div>
                   </button>
-                  <button className="btn btn--secondary" onClick={() => restoreSubscription(s.id)}>
+                  <button className="btn btn--secondary" onClick={() => handleRestore(s.id)}>
                     {t('archive.restore')}
                   </button>
                 </div>
