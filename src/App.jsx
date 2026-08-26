@@ -38,7 +38,25 @@ function AppShell() {
   const openYearReview = () => setOverlay({ type: 'year-review' });
   const openAddReminder = () => setOverlay({ type: 'reminder-form' });
   const openReminderDetail = (id) => setOverlay({ type: 'reminder-form', id });
-  const closeOverlay = () => setOverlay(null);
+
+  // Открытый оверлей добавляет запись в историю — тогда системный жест "назад"
+  // на Android (свайп с края экрана) и аппаратная кнопка «Назад» закрывают
+  // оверлей и возвращают в раздел, а не сворачивают/закрывают всё приложение.
+  // Кнопка закрытия (×) тоже идёт через history.back(), чтобы запись в истории
+  // не оставалась висеть — реальное закрытие происходит в обработчике popstate.
+  useEffect(() => {
+    if (!overlay) return undefined;
+    window.history.pushState({ overlayOpen: true }, '');
+    function handlePopState() {
+      setOverlay(null);
+    }
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [overlay]);
+
+  function closeOverlay() {
+    window.history.back();
+  }
 
   // Обработка ярлыков приложения (долгое нажатие на иконку на Android):
   // ?action=add открывает добавление подписки, ?screen=calendar сразу открывает
