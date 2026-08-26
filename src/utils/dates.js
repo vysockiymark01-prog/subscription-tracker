@@ -70,39 +70,52 @@ export function formatDaysUntil(dateStr, t, tp) {
 /**
  * Прибавляет один период к дате. Если в целевом месяце меньше дней
  * (напр. 31 янв + месяц), дата прижимается к последнему дню этого месяца.
+ *
+ * anchorDay — «настоящее» число месяца списания (напр. 31), которое нужно
+ * сохранять при повторных вызовах подряд. Без него после одного короткого
+ * месяца (30 дней вместо 31) число навсегда съезжало бы вниз: 31 → 30 (сент.) →
+ * 30 (окт., хотя там 31 день есть!) → 30 (нояб.) и так далее. С anchorDay
+ * каждый следующий месяц считается заново от исходного числа, поэтому в
+ * октябре и декабре (где 31 день) дата снова становится 31-м.
  */
-export function addPeriod(dateStr, period) {
-  const d = new Date(dateStr + 'T00:00:00');
+export function addPeriod(dateStr, period, anchorDay) {
+  const [y, m, dd] = dateStr.split('-').map(Number);
 
   if (period === 'week') {
+    const d = new Date(y, m - 1, dd);
     d.setDate(d.getDate() + 7);
     return toLocalISODate(d);
   }
 
-  const day = d.getDate();
+  const targetDay = anchorDay ?? dd;
+  let year = y;
+  let month = m - 1; // 0-индексация месяца
   if (period === 'year') {
-    d.setFullYear(d.getFullYear() + 1);
+    year += 1;
   } else if (period === 'quarter') {
-    d.setMonth(d.getMonth() + 3);
+    month += 3;
   } else {
-    d.setMonth(d.getMonth() + 1);
+    month += 1;
   }
-  if (d.getDate() !== day) {
-    d.setDate(0); // откатывает к последнему дню предыдущего (целевого) месяца
-  }
-  return toLocalISODate(d);
+  year += Math.floor(month / 12);
+  month = ((month % 12) + 12) % 12;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const day = Math.min(targetDay, daysInMonth);
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
 /**
  * Сдвигает дату вперёд на нужное число периодов, пока она не окажется
  * сегодня или в будущем. Используется для подписок, которые не открывали
  * дольше одного периода — nextPaymentDate мог устареть на несколько шагов.
+ * anchorDay фиксируется один раз от исходной даты — см. комментарий в addPeriod.
  */
 export function advanceOverdueDate(dateStr, period) {
+  const anchorDay = Number(dateStr.slice(-2));
   let current = dateStr;
   let guard = 0;
   while (daysUntil(current) < 0 && guard < 1000) {
-    current = addPeriod(current, period);
+    current = addPeriod(current, period, anchorDay);
     guard++;
   }
   return current;

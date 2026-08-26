@@ -34,12 +34,16 @@ function occurrencesInMonth(subscription, year, month) {
     if (d >= monthStart && d <= monthEnd) dates.push(d);
     return dates;
   }
+  // Число месяца фиксируем один раз от исходной даты списания — иначе после
+  // короткого месяца (30 дней) число навсегда съезжало бы вниз, даже в
+  // месяцах, где на самом деле 31 день есть (см. addPeriod).
+  const anchorDay = Number(subscription.nextPaymentDate.slice(-2));
   let current = subscription.nextPaymentDate;
   let guard = 0;
   while (guard < 60) {
     if (current > monthEnd) break;
     if (current >= monthStart) dates.push(current);
-    current = addPeriod(current, subscription.period);
+    current = addPeriod(current, subscription.period, anchorDay);
     guard++;
   }
   return dates;
