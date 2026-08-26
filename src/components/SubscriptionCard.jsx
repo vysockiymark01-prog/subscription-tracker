@@ -80,7 +80,7 @@ export default function SubscriptionCard({
       {swipable && (
         <button
           className="subscription-card__swipe-action"
-          style={{ width: -OPEN_X }}
+          style={{ width: -OPEN_X, visibility: dragX === 0 ? 'hidden' : 'visible' }}
           onClick={handleArchiveClick}
           aria-label={t('home.swipeArchive')}
         >
