@@ -326,6 +326,10 @@
   text-align: center;
 }
 
+.preset-grid__item span {
+  line-height: 1.2;
+}
+
 /* --- Forms --- */
 
 .subscription-form {

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useReminders } from '../context/RemindersContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
@@ -111,6 +111,29 @@ export default function CalendarScreen() {
     setCursor((c) => (c.month === 11 ? { year: c.year + 1, month: 0 } : { year: c.year, month: c.month + 1 }));
   }
 
+  // Свайп по сетке календаря — влево/вправо переключает месяц, как стрелки.
+  const touchStart = useRef(null);
+  const SWIPE_THRESHOLD = 40;
+
+  function handleTouchStart(e) {
+    const touch = e.touches[0];
+    touchStart.current = { x: touch.clientX, y: touch.clientY };
+  }
+
+  function handleTouchEnd(e) {
+    if (!touchStart.current) return;
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStart.current.x;
+    const deltaY = touch.clientY - touchStart.current.y;
+    touchStart.current = null;
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD || Math.abs(deltaX) < Math.abs(deltaY)) return;
+    if (deltaX < 0) {
+      goNextMonth();
+    } else if (!isAtCurrentMonth) {
+      goPrevMonth();
+    }
+  }
+
   const selectedEvents = eventsByDay[selectedDay] ?? [];
 
   return (
@@ -132,7 +155,7 @@ export default function CalendarScreen() {
         </button>
       </div>
 
-      <div className="calendar-grid">
+      <div className="calendar-grid" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         {weekdayLabels.map((w) => (
           <div key={w} className="calendar-grid__weekday">
             {w}
