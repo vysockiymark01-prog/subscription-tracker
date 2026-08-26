@@ -252,6 +252,7 @@ export default {
   'onboarding.addSelected.some': 'Добавить выбранные ({count})',
 
   'calendar.title': 'Календарь платежей',
+  'calendar.today': 'Сегодня',
   'calendar.empty': 'В этом месяце списаний нет',
   'calendar.legend': 'Дни со списаниями отмечены точкой',
   'calendar.prevMonth': 'Предыдущий месяц',

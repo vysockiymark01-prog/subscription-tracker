@@ -252,6 +252,7 @@ export default {
   'onboarding.addSelected.some': 'Дадаць абраныя ({count})',
 
   'calendar.title': 'Каляндар плацяжоў',
+  'calendar.today': 'Сёння',
   'calendar.empty': 'У гэтым месяцы спісанняў няма',
   'calendar.legend': 'Дні са спісаннямі пазначаны кропкай',
   'calendar.prevMonth': 'Папярэдні месяц',

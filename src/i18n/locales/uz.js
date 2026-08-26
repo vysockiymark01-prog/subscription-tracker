@@ -246,6 +246,7 @@ export default {
   'onboarding.addSelected.some': "Tanlanganlarni qo'shish ({count})",
 
   'calendar.title': "To'lovlar kalendari",
+  'calendar.today': 'Bugun',
   'calendar.empty': "Bu oyda to'lovlar yo'q",
   'calendar.legend': "To'lov bor kunlar nuqta bilan belgilangan",
   'calendar.prevMonth': "Oldingi oy",

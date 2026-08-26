@@ -115,6 +115,11 @@ export default function CalendarScreen() {
     setCursor((c) => (c.month === 11 ? { year: c.year + 1, month: 0 } : { year: c.year, month: c.month + 1 }));
   }
 
+  function goToday() {
+    setCursor({ year: now.getFullYear(), month: now.getMonth() });
+    setSelectedDay(today);
+  }
+
   // Свайп по сетке календаря — влево/вправо переключает месяц, как стрелки.
   const touchStart = useRef(null);
   const SWIPE_THRESHOLD = 40;
@@ -142,7 +147,14 @@ export default function CalendarScreen() {
 
   return (
     <div className="screen calendar-screen">
-      <h2>{t('calendar.title')}</h2>
+      <div className="calendar-title-row">
+        <h2>{t('calendar.title')}</h2>
+        {!isAtCurrentMonth && (
+          <button className="calendar-today-btn" onClick={goToday}>
+            {t('calendar.today')}
+          </button>
+        )}
+      </div>
 
       <div className="calendar-nav">
         <button

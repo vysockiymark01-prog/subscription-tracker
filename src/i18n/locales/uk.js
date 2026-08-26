@@ -252,6 +252,7 @@ export default {
   'onboarding.addSelected.some': 'Додати обрані ({count})',
 
   'calendar.title': 'Календар платежів',
+  'calendar.today': 'Сьогодні',
   'calendar.empty': 'Цього місяця списань немає',
   'calendar.legend': 'Дні зі списаннями позначені крапкою',
   'calendar.prevMonth': 'Попередній місяць',

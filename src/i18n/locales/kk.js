@@ -246,6 +246,7 @@ export default {
   'onboarding.addSelected.some': 'Таңдалғандарды қосу ({count})',
 
   'calendar.title': 'Төлемдер күнтізбесі',
+  'calendar.today': 'Бүгін',
   'calendar.empty': 'Бұл айда төлемдер жоқ',
   'calendar.legend': 'Төлем бар күндер нүктемен белгіленген',
   'calendar.prevMonth': 'Алдыңғы ай',
