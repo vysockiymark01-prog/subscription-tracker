@@ -125,7 +125,13 @@ export default function YearReviewScreen({ onClose }) {
           <div className="year-review__year">{year}</div>
           <div className="year-review__title">{t('year.subtitle')}</div>
 
-          <div className="year-review__big-number">{formatTotals(annualByCurrency, annualConverted)}</div>
+          <div
+            className={`year-review__big-number${
+              annualConverted === null && annualByCurrency.length > 1 ? ' year-review__big-number--multi' : ''
+            }`}
+          >
+            {formatTotals(annualByCurrency, annualConverted)}
+          </div>
           <div className="year-review__big-label">{t('year.spendLabel')}</div>
 
           <div className="year-review__grid">

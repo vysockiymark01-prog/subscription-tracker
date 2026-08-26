@@ -730,6 +730,16 @@
 .year-review__big-number {
   font-size: 34px;
   font-weight: 800;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+/* Когда валюты не удалось свести к одной (офлайн/нет курса) и суммы
+   склеены через " + " — строка длиннее и легче переносится на 2 строки,
+   из-за чего символы валют визуально слипались друг с другом. */
+.year-review__big-number--multi {
+  font-size: 26px;
+  line-height: 1.4;
 }
 
 .year-review__big-label {
