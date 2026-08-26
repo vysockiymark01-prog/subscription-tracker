@@ -27,6 +27,7 @@ export default {
   'period.month.full': 'Щомісяця',
   'period.quarter.full': 'Щоквартально',
   'period.year.full': 'Щороку',
+  'period.once.full': 'Разова (без продовження)',
 
   'home.empty.title': 'Поки немає підписок',
   'home.empty.text': 'Додайте першу підписку, щоб відстежувати списання',

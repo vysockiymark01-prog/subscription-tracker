@@ -27,6 +27,7 @@ export default {
   'period.month.full': 'Ежемесячно',
   'period.quarter.full': 'Ежеквартально',
   'period.year.full': 'Ежегодно',
+  'period.once.full': 'Разовая (без продления)',
 
   'home.empty.title': 'Пока нет подписок',
   'home.empty.text': 'Добавь первую подписку, чтобы отслеживать списания',

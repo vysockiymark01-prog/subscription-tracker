@@ -27,6 +27,7 @@ export default {
   'period.month.full': 'Штомесяц',
   'period.quarter.full': 'Штоквартал',
   'period.year.full': 'Штогод',
+  'period.once.full': 'Разавая (без працягу)',
 
   'home.empty.title': 'Пакуль няма падпісак',
   'home.empty.text': 'Дадайце першую падпіску, каб адсочваць спісанні',

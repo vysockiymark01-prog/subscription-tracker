@@ -27,6 +27,7 @@ export default {
   'period.month.full': 'Ай сайын',
   'period.quarter.full': 'Тоқсан сайын',
   'period.year.full': 'Жыл сайын',
+  'period.once.full': 'Бір реттік (жалғаспайды)',
 
   'home.empty.title': 'Әзірге жазылымдар жоқ',
   'home.empty.text': 'Төлемдерді бақылау үшін алғашқы жазылымды қосыңыз',

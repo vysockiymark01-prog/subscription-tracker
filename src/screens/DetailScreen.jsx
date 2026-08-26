@@ -179,14 +179,27 @@ export default function DetailScreen({ id, onClose }) {
 
         <label>
           {t('add.period')}
-          <select className="input" value={form.period} onChange={(e) => setField('period', e.target.value)}>
+          <select
+            className="input"
+            value={form.oneTime ? 'once' : form.period}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === 'once') {
+                setForm((f) => ({ ...f, oneTime: true }));
+              } else {
+                setForm((f) => ({ ...f, period: v, oneTime: false }));
+              }
+            }}
+          >
             {PERIODS.map((p) => (
               <option key={p} value={p}>
                 {t(`period.${p}.full`)}
               </option>
             ))}
+            <option value="once">{t('period.once.full')}</option>
           </select>
         </label>
+        {form.oneTime && <p className="settings-hint">{t('add.oneTime.hint')}</p>}
 
         {priceHistory.length > 1 && (
           <p className="price-history-hint">
@@ -253,16 +266,6 @@ export default function DetailScreen({ id, onClose }) {
             )}
           </p>
         )}
-
-        <label className="toggle-row">
-          <span>{t('add.oneTime')}</span>
-          <input
-            type="checkbox"
-            checked={Boolean(form.oneTime)}
-            onChange={(e) => setField('oneTime', e.target.checked)}
-          />
-        </label>
-        {form.oneTime && <p className="settings-hint">{t('add.oneTime.hint')}</p>}
 
         <label className="toggle-row">
           <span>{t('add.trial')}</span>

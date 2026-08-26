@@ -27,6 +27,7 @@ export default {
   'period.month.full': 'Oylik',
   'period.quarter.full': 'Choraklik',
   'period.year.full': 'Yillik',
+  'period.once.full': 'Bir martalik (davom etmaydi)',
 
   'home.empty.title': "Hozircha obunalar yo'q",
   'home.empty.text': "To'lovlarni kuzatish uchun birinchi obunani qo'shing",
