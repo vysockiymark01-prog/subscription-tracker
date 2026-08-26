@@ -27,6 +27,13 @@ function occurrencesInMonth(subscription, year, month) {
   const monthStart = toIsoDate(year, month, 1);
   const monthEnd = toIsoDate(year, month, new Date(year, month + 1, 0).getDate());
   const dates = [];
+  // Разовая подписка не продлевается автоматически — в календаре у неё только
+  // одна дата списания, без проекции вперёд по периоду.
+  if (subscription.oneTime) {
+    const d = subscription.nextPaymentDate;
+    if (d >= monthStart && d <= monthEnd) dates.push(d);
+    return dates;
+  }
   let current = subscription.nextPaymentDate;
   let guard = 0;
   while (guard < 60) {
