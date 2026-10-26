@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
-import { CATEGORIES, PERIODS, REMINDER_OPTIONS, getCustomCategories } from '../storage.js';
+import { CATEGORIES, PERIODS, REMINDER_OPTIONS, getCustomCategories, getKnownCards } from '../storage.js';
 import PresetIcon from '../components/PresetIcon.jsx';
 import ColorPicker from '../components/ColorPicker.jsx';
 import EmojiPicker from '../components/EmojiPicker.jsx';
 import { getIconFor, getPresetById } from '../data/presets.js';
 import { formatMoney, splitPrice, CURRENCIES } from '../utils/money.js';
 import { buildSubscriptionIcs } from '../utils/ics.js';
+import { formatShortDate } from '../utils/dates.js';
 import { vibrate } from '../utils/haptics.js';
 
 export default function DetailScreen({ id, onClose }) {
@@ -19,12 +20,15 @@ export default function DetailScreen({ id, onClose }) {
     pauseSubscription,
     resumeSubscription,
     deleteSubscription,
+    markPaid,
+    removePayment,
   } = useAppData();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const subscription = getById(id);
   const [form, setForm] = useState(subscription ? { ...subscription } : null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [customCategories] = useState(() => getCustomCategories());
+  const [knownCards] = useState(() => getKnownCards());
 
   if (!subscription || !form) {
     return (
@@ -64,6 +68,7 @@ export default function DetailScreen({ id, onClose }) {
       reminderDays: Number(form.reminderDays),
       splitCount: Number(form.splitCount) > 0 ? Number(form.splitCount) : 1,
       oneTime: form.oneTime,
+      card: (form.card ?? '').trim(),
       customColor: form.customColor || null,
       emoji: form.emoji || null,
       note: form.note || '',
@@ -93,6 +98,14 @@ export default function DetailScreen({ id, onClose }) {
     vibrate();
     resumeSubscription(id);
     onClose();
+  }
+
+  function handleMarkPaid() {
+    vibrate();
+    const updated = markPaid(id);
+    // Форма — копия подписки: подтягиваем новую дату, иначе «Сохранить»
+    // вернул бы старую.
+    if (updated) setForm((f) => ({ ...f, nextPaymentDate: updated.nextPaymentDate }));
   }
 
   function handleDelete() {
@@ -236,6 +249,23 @@ export default function DetailScreen({ id, onClose }) {
         </label>
 
         <label>
+          {t('add.card')}
+          <input
+            className="input"
+            type="text"
+            list="known-cards"
+            placeholder={t('add.card.placeholder')}
+            value={form.card ?? ''}
+            onChange={(e) => setField('card', e.target.value)}
+          />
+          <datalist id="known-cards">
+            {knownCards.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
+        </label>
+
+        <label>
           {t('add.nextPayment')}
           <input
             className="input"
@@ -313,6 +343,41 @@ export default function DetailScreen({ id, onClose }) {
           {t('detail.save')}
         </button>
       </form>
+
+      <section className="payments-history">
+        <div className="payments-history__header">
+          <h3>{t('payments.title')}</h3>
+          {subscription.status === 'active' && (
+            <button className="btn btn--secondary" onClick={handleMarkPaid}>
+              {t('payments.markPaid')}
+            </button>
+          )}
+        </div>
+        {(subscription.payments ?? []).length === 0 ? (
+          <p className="settings-hint">{t('payments.empty')}</p>
+        ) : (
+          <ul className="payments-history__list">
+            {[...subscription.payments]
+              .reverse()
+              .slice(0, 12)
+              .map((p) => (
+                <li key={p.date} className="payments-history__item">
+                  <span>{formatShortDate(p.date, language)} {p.date.slice(0, 4)}</span>
+                  <span className="payments-history__amount">{formatMoney(p.amount, p.currency)}</span>
+                  <button
+                    type="button"
+                    className="custom-category-list__remove"
+                    onClick={() => removePayment(id, p.date)}
+                    aria-label={t('payments.remove')}
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+          </ul>
+        )}
+        <p className="settings-hint">{t('payments.hint')}</p>
+      </section>
 
       <div className="detail-actions">
         <button className="btn btn--secondary btn--block" onClick={handleAddToCalendar}>

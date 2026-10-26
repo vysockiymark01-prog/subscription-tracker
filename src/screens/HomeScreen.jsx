@@ -5,17 +5,20 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 import SubscriptionCard from '../components/SubscriptionCard.jsx';
 import NotificationBadge from '../components/NotificationBadge.jsx';
 import SmartTips from '../components/SmartTips.jsx';
-import { toMonthly, toAnnual, formatMoney, splitPrice, sumConverted } from '../utils/money.js';
+import { monthlyCost, annualCost, formatMoney, sumConverted } from '../utils/money.js';
 import { vibrate } from '../utils/haptics.js';
+import { todayISO } from '../utils/dates.js';
+import BudgetBar from '../components/BudgetBar.jsx';
 
 const SORTERS = {
   date: (a, b) => a.nextPaymentDate.localeCompare(b.nextPaymentDate),
-  priceDesc: (a, b) => toMonthly(splitPrice(b), b.period) - toMonthly(splitPrice(a), a.period),
+  priceDesc: (a, b) => annualCost(b) - annualCost(a),
   name: (a, b) => a.name.localeCompare(b.name, 'ru'),
 };
 
 export default function HomeScreen({ onAdd, onOpenDetail }) {
-  const { activeSubscriptions, cancelSubscription, cancelMany, deleteMany } = useAppData();
+  const { activeSubscriptions, cancelSubscription, cancelMany, deleteMany, extendOneTime } = useAppData();
+  const today = todayISO();
   const { convert, displayCurrency } = useExchangeRate();
   const { t } = useLanguage();
   const [query, setQuery] = useState('');
@@ -78,7 +81,7 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
     const totals = {};
     for (const s of sorted) {
       const code = s.currency ?? 'RUB';
-      totals[code] = (totals[code] ?? 0) + toMonthly(splitPrice(s), s.period);
+      totals[code] = (totals[code] ?? 0) + monthlyCost(s);
     }
     return Object.entries(totals);
   }, [sorted]);
@@ -86,7 +89,7 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
     const totals = {};
     for (const s of sorted) {
       const code = s.currency ?? 'RUB';
-      totals[code] = (totals[code] ?? 0) + toAnnual(splitPrice(s), s.period);
+      totals[code] = (totals[code] ?? 0) + annualCost(s);
     }
     return Object.entries(totals);
   }, [sorted]);
@@ -132,6 +135,8 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
           </div>
         </div>
       </div>
+
+      <BudgetBar subscriptions={sorted} />
 
       <SmartTips subscriptions={sorted} />
 
@@ -199,15 +204,37 @@ export default function HomeScreen({ onAdd, onOpenDetail }) {
       ) : (
         <div className="subscription-list">
           {filtered.map((s) => (
-            <SubscriptionCard
-              key={s.id}
-              subscription={s}
-              onClick={() => onOpenDetail(s.id)}
-              onSwipeArchive={handleSwipeArchive}
-              selectMode={selectMode}
-              selected={selectedIds.has(s.id)}
-              onToggleSelect={toggleSelected}
-            />
+            <div key={s.id} className="subscription-list__entry">
+              <SubscriptionCard
+                subscription={s}
+                onClick={() => onOpenDetail(s.id)}
+                onSwipeArchive={handleSwipeArchive}
+                selectMode={selectMode}
+                selected={selectedIds.has(s.id)}
+                onToggleSelect={toggleSelected}
+              />
+              {/* Разовая, чей платёж уже прошёл: сама она не продлевается —
+                  спрашиваем, что дальше, вместо вечного «N дней назад». */}
+              {s.oneTime && s.nextPaymentDate < today && !selectMode && (
+                <div className="onetime-prompt">
+                  <span className="onetime-prompt__text">{t('home.oneTimePassed')}</span>
+                  <div className="onetime-prompt__actions">
+                    <button
+                      className="btn btn--secondary"
+                      onClick={() => {
+                        vibrate();
+                        extendOneTime(s.id);
+                      }}
+                    >
+                      {t('home.oneTimeExtend')}
+                    </button>
+                    <button className="btn btn--secondary" onClick={() => handleSwipeArchive(s.id)}>
+                      {t('home.swipeArchive')}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       )}

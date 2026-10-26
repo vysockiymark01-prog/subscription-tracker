@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useAppData } from '../context/AppDataContext.jsx';
 import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
-import { toAnnual, formatMoney, splitPrice, sumConverted } from '../utils/money.js';
+import { toAnnual, annualCost, formatMoney, sumConverted } from '../utils/money.js';
 
 export default function YearReviewScreen({ onClose }) {
   const { subscriptions, activeSubscriptions, cancelledSubscriptions } = useAppData();
@@ -18,7 +18,7 @@ export default function YearReviewScreen({ onClose }) {
     const totals = {};
     for (const s of activeSubscriptions) {
       const code = s.currency ?? 'RUB';
-      totals[code] = (totals[code] ?? 0) + toAnnual(splitPrice(s), s.period);
+      totals[code] = (totals[code] ?? 0) + annualCost(s);
     }
     return Object.entries(totals);
   }, [activeSubscriptions]);
@@ -33,7 +33,7 @@ export default function YearReviewScreen({ onClose }) {
     const totals = {};
     for (const s of cancelledThisYear) {
       const code = s.currency ?? 'RUB';
-      totals[code] = (totals[code] ?? 0) + toAnnual(s.price, s.period);
+      totals[code] = (totals[code] ?? 0) + (s.oneTime ? 0 : toAnnual(s.price, s.period));
     }
     return Object.entries(totals);
   }, [cancelledThisYear]);
@@ -42,7 +42,7 @@ export default function YearReviewScreen({ onClose }) {
   const topSubscription = useMemo(() => {
     if (activeSubscriptions.length === 0) return null;
     return [...activeSubscriptions].sort(
-      (a, b) => toAnnual(splitPrice(b), b.period) - toAnnual(splitPrice(a), a.period),
+      (a, b) => annualCost(b) - annualCost(a),
     )[0];
   }, [activeSubscriptions]);
 
@@ -156,7 +156,7 @@ export default function YearReviewScreen({ onClose }) {
           {topSubscription && (
             <div className="year-review__highlight">
               {t('year.topSub')} <b>{topSubscription.name}</b> —{' '}
-              {formatMoney(toAnnual(splitPrice(topSubscription), topSubscription.period), topSubscription.currency)}
+              {formatMoney(annualCost(topSubscription), topSubscription.currency)}
               {t('year.perYear')}
             </div>
           )}

@@ -1,7 +1,7 @@
 // Единственная точка доступа к данным приложения.
 // Сейчас поверх localStorage, при переходе на IndexedDB меняется только этот файл.
 
-import { advanceOverdueDate, todayISO } from './utils/dates.js';
+import { addPeriod, daysUntil, todayISO } from './utils/dates.js';
 import { parseSubscriptionsCsv } from './utils/csv.js';
 
 const STORAGE_KEY = 'subscriptions';
@@ -63,6 +63,8 @@ export function createSubscription(fields) {
     note: '',
     splitCount: 1,
     oneTime: false,
+    card: '',
+    payments: [],
     priceHistory: [],
     ...fields,
   };
@@ -77,24 +79,100 @@ export function getAllSubscriptions() {
   return readAll();
 }
 
+// Сколько последних записей истории оплат храним на подписку — чтобы еженедельная
+// подписка за много лет не раздувала localStorage.
+const MAX_PAYMENTS = 200;
+
+function paymentEntry(s, date) {
+  const count = s.splitCount > 0 ? s.splitCount : 1;
+  return { date, amount: s.price / count, currency: s.currency ?? 'RUB' };
+}
+
+function appendPayments(s, entries) {
+  if (entries.length === 0) return s.payments ?? [];
+  const existing = s.payments ?? [];
+  const known = new Set(existing.map((p) => p.date));
+  const merged = [...existing, ...entries.filter((e) => !known.has(e.date))];
+  merged.sort((a, b) => a.date.localeCompare(b.date));
+  return merged.slice(-MAX_PAYMENTS);
+}
+
 /**
  * Сдвигает nextPaymentDate вперёд для всех активных подписок, у которых
- * дата списания уже в прошлом (приложение не открывали дольше периода).
- * Вызывается один раз при открытии приложения. Разовые подписки (oneTime) не
- * трогаем — они не продлеваются сами, пользователь отменяет их вручную.
+ * дата списания уже в прошлом (приложение не открывали дольше периода), и
+ * записывает каждое прошедшее списание в историю оплат (payments).
+ * Вызывается один раз при открытии приложения.
+ * Разовые (oneTime) не продлеваются сами: их прошедший платёж записывается в
+ * историю, а дата остаётся — на карточке появится выбор «Продлить / В архив».
  */
 export function reconcileNextPaymentDates() {
   const all = readAll();
+  const today = todayISO();
   let changed = false;
   const updated = all.map((s) => {
-    if (s.status !== 'active' || s.oneTime) return s;
-    const nextDate = advanceOverdueDate(s.nextPaymentDate, s.period);
-    if (nextDate === s.nextPaymentDate) return s;
+    if (s.status !== 'active' || !s.nextPaymentDate) return s;
+    if (s.oneTime) {
+      if (s.nextPaymentDate >= today) return s;
+      if ((s.payments ?? []).some((p) => p.date === s.nextPaymentDate)) return s;
+      changed = true;
+      return { ...s, payments: appendPayments(s, [paymentEntry(s, s.nextPaymentDate)]) };
+    }
+    if (s.nextPaymentDate >= today) return s;
+    const anchorDay = Number(s.nextPaymentDate.slice(-2));
+    const passed = [];
+    let current = s.nextPaymentDate;
+    let guard = 0;
+    while (current < today && guard < 1000) {
+      passed.push(paymentEntry(s, current));
+      current = addPeriod(current, s.period, anchorDay);
+      guard++;
+    }
     changed = true;
-    return { ...s, nextPaymentDate: nextDate };
+    return { ...s, nextPaymentDate: current, payments: appendPayments(s, passed) };
   });
   if (changed) writeAll(updated);
   return updated;
+}
+
+/**
+ * «Оплатил» вручную: записывает платёж сегодняшним днём. Если ближайшее
+ * списание у регулярной подписки уже близко (≤ 7 дней) или прошло — считаем,
+ * что оплачен текущий период, и переносим дату на следующий.
+ */
+export function markPaid(id) {
+  const s = getSubscriptionById(id);
+  if (!s) return null;
+  const today = todayISO();
+  const patch = { payments: appendPayments(s, [paymentEntry(s, today)]) };
+  if (!s.oneTime && s.nextPaymentDate && daysUntil(s.nextPaymentDate) <= 7) {
+    patch.nextPaymentDate = addPeriod(s.nextPaymentDate, s.period, Number(s.nextPaymentDate.slice(-2)));
+  }
+  return updateSubscription(id, patch);
+}
+
+export function removePayment(id, date) {
+  const s = getSubscriptionById(id);
+  if (!s) return null;
+  return updateSubscription(id, { payments: (s.payments ?? []).filter((p) => p.date !== date) });
+}
+
+/**
+ * Продлить разовую подписку, у которой дата платежа уже прошла: следующий
+ * платёж — через её период от прошлой даты (если и он уже в прошлом —
+ * сдвигаем дальше, пока дата не окажется сегодня или позже).
+ */
+export function extendOneTime(id) {
+  const s = getSubscriptionById(id);
+  if (!s) return null;
+  const today = todayISO();
+  const anchorDay = Number(s.nextPaymentDate.slice(-2));
+  let next = addPeriod(s.nextPaymentDate, s.period, anchorDay);
+  let guard = 0;
+  while (next < today && guard < 1000) {
+    next = addPeriod(next, s.period, anchorDay);
+    guard++;
+  }
+  return updateSubscription(id, { nextPaymentDate: next });
 }
 
 export function getActiveSubscriptions() {
@@ -173,17 +251,50 @@ export function resumeSubscription(id) {
   });
 }
 
+/**
+ * Бэкап всех пользовательских данных: подписки, напоминания, свои категории и
+ * бюджет. Раньше выгружались только подписки — напоминания при переустановке
+ * терялись.
+ */
 export function exportData() {
-  return JSON.stringify(readAll(), null, 2);
+  return JSON.stringify(
+    {
+      app: 'subscription-tracker',
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      subscriptions: readAll(),
+      reminders: readAllReminders(),
+      customCategories: getCustomCategories(),
+      monthlyBudget: getMonthlyBudget(),
+    },
+    null,
+    2,
+  );
 }
 
+/**
+ * Принимает и новый формат (объект version 2), и старый (просто массив подписок).
+ */
 export function importData(json) {
   const parsed = JSON.parse(json);
-  if (!Array.isArray(parsed)) {
-    throw new Error('Некорректный формат файла: ожидался массив подписок');
+  if (Array.isArray(parsed)) {
+    writeAll(parsed);
+    return parsed;
   }
-  writeAll(parsed);
-  return parsed;
+  if (!parsed || !Array.isArray(parsed.subscriptions)) {
+    throw new Error('Некорректный формат файла: не найден список подписок');
+  }
+  writeAll(parsed.subscriptions);
+  if (Array.isArray(parsed.reminders)) writeAllReminders(parsed.reminders);
+  if (Array.isArray(parsed.customCategories)) {
+    try {
+      localStorage.setItem(CUSTOM_CATEGORIES_KEY, JSON.stringify(parsed.customCategories));
+    } catch {
+      // не критично
+    }
+  }
+  if (parsed.monthlyBudget !== undefined) setMonthlyBudget(parsed.monthlyBudget);
+  return parsed.subscriptions;
 }
 
 /**
@@ -535,6 +646,7 @@ export function createReminder(fields) {
     emoji: null,
     customColor: null,
     createdAt: todayISO(),
+    completions: [], // даты событий, отмеченные «Сделано»
     ...fields,
   };
 }
@@ -570,4 +682,85 @@ export function deleteReminder(id) {
   const filtered = all.filter((r) => r.id !== id);
   writeAllReminders(filtered);
   return filtered.length !== all.length;
+}
+
+const MAX_COMPLETIONS = 200;
+
+/**
+ * Отметить событие напоминания (конкретную дату) выполненным или снять отметку.
+ */
+export function toggleReminderDone(id, occurrenceDate) {
+  const r = getReminderById(id);
+  if (!r) return null;
+  const done = r.completions ?? [];
+  const completions = done.includes(occurrenceDate)
+    ? done.filter((d) => d !== occurrenceDate)
+    : [...done, occurrenceDate].sort().slice(-MAX_COMPLETIONS);
+  return updateReminder(id, { completions });
+}
+
+// --- Бюджет на подписки в месяц ---
+
+const MONTHLY_BUDGET_KEY = 'monthly-budget';
+
+/** { amount, currency } или null, если бюджет не задан. */
+export function getMonthlyBudget() {
+  try {
+    const raw = localStorage.getItem(MONTHLY_BUDGET_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed && parsed.amount > 0 ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setMonthlyBudget(budget) {
+  try {
+    if (budget && budget.amount > 0) localStorage.setItem(MONTHLY_BUDGET_KEY, JSON.stringify(budget));
+    else localStorage.removeItem(MONTHLY_BUDGET_KEY);
+  } catch {
+    // не критично
+  }
+}
+
+// --- Сводка на неделю (уведомление по понедельникам) ---
+
+const WEEKLY_SUMMARY_KEY = 'weekly-summary-enabled';
+const LAST_WEEKLY_SUMMARY_KEY = 'last-weekly-summary-at';
+
+export function isWeeklySummaryEnabled() {
+  try {
+    return localStorage.getItem(WEEKLY_SUMMARY_KEY) !== '0';
+  } catch {
+    return true;
+  }
+}
+
+export function setWeeklySummaryEnabled(enabled) {
+  try {
+    localStorage.setItem(WEEKLY_SUMMARY_KEY, enabled ? '1' : '0');
+  } catch {
+    // не критично
+  }
+}
+
+export function getLastWeeklySummaryAt() {
+  try {
+    return localStorage.getItem(LAST_WEEKLY_SUMMARY_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setLastWeeklySummaryAt(isoDate) {
+  try {
+    localStorage.setItem(LAST_WEEKLY_SUMMARY_KEY, isoDate);
+  } catch {
+    // не критично
+  }
+}
+
+/** Все метки карт, уже использованные в подписках — для подсказок при вводе. */
+export function getKnownCards() {
+  return [...new Set(readAll().map((s) => (s.card ?? '').trim()).filter(Boolean))].sort();
 }

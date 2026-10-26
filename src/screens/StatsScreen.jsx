@@ -4,8 +4,9 @@ import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { CATEGORIES, getCategoryLabel } from '../storage.js';
 import { getIconFor } from '../data/presets.js';
-import { toMonthly, formatMoney, splitPrice, sumConverted } from '../utils/money.js';
+import { toMonthly, monthlyCost, formatMoney, splitPrice, sumConverted } from '../utils/money.js';
 import { getLifetimeSpend } from '../utils/insights.js';
+import { todayISO } from '../utils/dates.js';
 
 const LOCALE_TAGS = { ru: 'ru-RU', kk: 'kk-KZ', uk: 'uk-UA', be: 'be-BY', uz: 'uz-UZ' };
 
@@ -19,7 +20,8 @@ export default function StatsScreen({ onOpenYearReview }) {
   const byCategory = useMemo(() => {
     const totals = {};
     for (const s of activeSubscriptions) {
-      const monthly = toMonthly(splitPrice(s), s.period);
+      const monthly = monthlyCost(s);
+      if (monthly === 0) continue;
       const converted = convert(monthly, s.currency ?? 'RUB');
       const amount = converted ?? monthly;
       const currency = converted !== null ? displayCurrency : (s.currency ?? 'RUB');
@@ -39,7 +41,8 @@ export default function StatsScreen({ onOpenYearReview }) {
   const costRanking = useMemo(() => {
     return [...activeSubscriptions]
       .map((s) => {
-        const monthly = toMonthly(splitPrice(s), s.period);
+        // Разовая показывается полной ценой платежа — «в месяц» для неё не имеет смысла.
+        const monthly = s.oneTime ? splitPrice(s) : toMonthly(splitPrice(s), s.period);
         const converted = convert(monthly, s.currency ?? 'RUB');
         return {
           id: s.id,
@@ -75,7 +78,14 @@ export default function StatsScreen({ onOpenYearReview }) {
         if (!applicable) continue;
         if (s.cancelledAt && s.cancelledAt.slice(0, 7) < month) continue;
         const splitCount = s.splitCount > 0 ? s.splitCount : 1;
-        const monthly = toMonthly(applicable.price / splitCount, s.period);
+        let monthly;
+        if (s.oneTime) {
+          // Разовая попадает в тренд только в месяц своего платежа.
+          if ((s.nextPaymentDate ?? '').slice(0, 7) !== month) continue;
+          monthly = applicable.price / splitCount;
+        } else {
+          monthly = toMonthly(applicable.price / splitCount, s.period);
+        }
         const converted = convert(monthly, s.currency ?? 'RUB');
         total += converted ?? monthly;
       }
@@ -94,6 +104,41 @@ export default function StatsScreen({ onOpenYearReview }) {
     () => sumConverted(lifetimeSpendByCurrency, convert),
     [lifetimeSpendByCurrency, convert],
   );
+
+  // Реально списано в текущем месяце — по истории оплат, а не по прогнозу.
+  const paidThisMonthByCurrency = useMemo(() => {
+    const month = todayISO().slice(0, 7);
+    const totals = {};
+    for (const s of subscriptions) {
+      for (const p of s.payments ?? []) {
+        if (p.date.slice(0, 7) !== month) continue;
+        totals[p.currency] = (totals[p.currency] ?? 0) + p.amount;
+      }
+    }
+    return Object.entries(totals);
+  }, [subscriptions]);
+  const paidThisMonthConverted = useMemo(
+    () => sumConverted(paidThisMonthByCurrency, convert),
+    [paidThisMonthByCurrency, convert],
+  );
+
+  // Траты по картам (если у подписок указана карта) — видно, что отвалится,
+  // когда карта истечёт или будет заблокирована.
+  const byCard = useMemo(() => {
+    const totals = {};
+    for (const s of activeSubscriptions) {
+      const card = (s.card ?? '').trim();
+      if (!card) continue;
+      const monthly = monthlyCost(s);
+      const converted = convert(monthly, s.currency ?? 'RUB');
+      const currency = converted !== null ? displayCurrency : (s.currency ?? 'RUB');
+      const key = `${card}__${currency}`;
+      if (!totals[key]) totals[key] = { card, currency, total: 0, names: [] };
+      totals[key].total += converted ?? monthly;
+      totals[key].names.push(s.name);
+    }
+    return Object.values(totals).sort((a, b) => a.card.localeCompare(b.card));
+  }, [activeSubscriptions, convert, displayCurrency]);
 
   if (activeSubscriptions.length === 0) {
     return (
@@ -121,6 +166,34 @@ export default function StatsScreen({ onOpenYearReview }) {
               : lifetimeSpendByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')}
           </div>
         </div>
+      )}
+
+      {paidThisMonthByCurrency.length > 0 && (
+        <div className="stats-lifetime">
+          <div className="stats-lifetime__label">{t('stats.paidThisMonth')}</div>
+          <div className="stats-lifetime__value">
+            {paidThisMonthConverted !== null
+              ? formatMoney(paidThisMonthConverted, displayCurrency)
+              : paidThisMonthByCurrency.map(([code, total]) => formatMoney(total, code)).join(' + ')}
+          </div>
+        </div>
+      )}
+
+      {byCard.length > 0 && (
+        <section className="stats-section">
+          <h2>{t('stats.byCard')}</h2>
+          <div className="card-totals">
+            {byCard.map((c) => (
+              <div key={`${c.card}-${c.currency}`} className="card-totals__item">
+                <div className="category-bar__label">
+                  <span>💳 {c.card}</span>
+                  <span>{formatMoney(c.total, c.currency)} / {t('period.month.short')}</span>
+                </div>
+                <div className="card-totals__names">{c.names.join(', ')}</div>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       <section className="stats-section">

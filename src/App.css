@@ -1365,3 +1365,164 @@
   font-size: 12px;
   font-weight: 600;
 }
+
+/* --- Разовая подписка после даты платежа: «Продлить / В архив» --- */
+
+.subscription-list__entry {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.onetime-prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.onetime-prompt__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.onetime-prompt__actions .btn {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+/* --- Бюджет на месяц --- */
+
+.budget-bar {
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.budget-bar__label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.budget-bar__track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.budget-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.3s ease-out;
+}
+
+.budget-bar--over .budget-bar__fill {
+  background: var(--danger);
+}
+
+.budget-bar__warning {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.settings-add-category .settings-budget-currency {
+  flex: none;
+  width: auto;
+}
+
+/* --- История оплат / выполнений --- */
+
+.payments-history {
+  margin: 8px 0 16px;
+}
+
+.payments-history__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.payments-history__header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-h);
+}
+
+.payments-history__header .btn {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.payments-history__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payments-history__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--card-bg);
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.payments-history__amount {
+  margin-left: auto;
+  color: var(--text);
+}
+
+/* --- Напоминание: кнопка «Сделано» --- */
+
+.reminder-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reminder-row__done {
+  align-self: flex-end;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* --- Статистика по картам --- */
+
+.card-totals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-totals__names {
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.8;
+}

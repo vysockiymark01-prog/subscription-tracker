@@ -1,3 +1,5 @@
+import { todayISO } from './dates.js';
+
 const PERIODS_PER_YEAR = {
   week: 52,
   month: 12,
@@ -11,6 +13,28 @@ export function toAnnual(price, period) {
 
 export function toMonthly(price, period) {
   return toAnnual(price, period) / 12;
+}
+
+/**
+ * Сколько подписка стоит пользователю в месяц — для итогов «В месяц», статистики
+ * и бюджета. Разовая подписка не повторяется, поэтому её полная цена попадает
+ * только в тот месяц, на который приходится дата платежа, а не размазывается
+ * как ежемесячная (иначе разовые 1 690 ₽ превращались в 20 280 ₽ «в год»).
+ */
+export function monthlyCost(subscription, today = todayISO()) {
+  const share = splitPrice(subscription);
+  if (subscription.oneTime) {
+    return (subscription.nextPaymentDate ?? '').slice(0, 7) === today.slice(0, 7) ? share : 0;
+  }
+  return toMonthly(share, subscription.period);
+}
+
+/**
+ * Стоимость подписки за год. Разовая — один платёж, а не 12.
+ */
+export function annualCost(subscription) {
+  const share = splitPrice(subscription);
+  return subscription.oneTime ? share : toAnnual(share, subscription.period);
 }
 
 // Валюты РФ, СНГ и основные мировые — с символом и локалью для форматирования чисел.

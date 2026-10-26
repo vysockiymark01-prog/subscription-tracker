@@ -3,12 +3,13 @@ import { useReminders } from '../context/RemindersContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import PresetIcon from '../components/PresetIcon.jsx';
 import { getIconFor } from '../data/presets.js';
-import { formatDaysUntil } from '../utils/dates.js';
-import { getNextOccurrence, isFinished } from '../utils/reminderDates.js';
+import { formatDaysUntil, formatShortDate } from '../utils/dates.js';
+import { vibrate } from '../utils/haptics.js';
+import { getNextOccurrence, isFinished, getDueOccurrence, isDuePending } from '../utils/reminderDates.js';
 
 export default function RemindersScreen({ onAdd, onOpenDetail }) {
-  const { reminders } = useReminders();
-  const { t, tp } = useLanguage();
+  const { reminders, toggleDone } = useReminders();
+  const { t, tp, language } = useLanguage();
   const [query, setQuery] = useState('');
 
   const withNextDate = useMemo(
@@ -71,21 +72,37 @@ export default function RemindersScreen({ onAdd, onOpenDetail }) {
             <div className="subscription-list">
               {filteredUpcoming.map(({ reminder, next }) => {
                 const icon = getIconFor(reminder);
+                const due = getDueOccurrence(reminder);
+                const pending = isDuePending(reminder);
+                const lastDone = (reminder.completions ?? []).at(-1);
                 return (
-                  <button
-                    key={reminder.id}
-                    className="subscription-card"
-                    onClick={() => onOpenDetail(reminder.id)}
-                  >
-                    <PresetIcon color={icon.color} letter={icon.letter} emoji={icon.emoji} />
-                    <div className="subscription-card__info">
-                      <div className="subscription-card__name">{reminder.name}</div>
-                      <div className="subscription-card__meta">
-                        {tp('reminders.every', reminder.intervalDays)}
+                  <div key={reminder.id} className="reminder-row">
+                    <button className="subscription-card" onClick={() => onOpenDetail(reminder.id)}>
+                      <PresetIcon color={icon.color} letter={icon.letter} emoji={icon.emoji} />
+                      <div className="subscription-card__info">
+                        <div className="subscription-card__name">{reminder.name}</div>
+                        <div className="subscription-card__meta">
+                          {tp('reminders.every', reminder.intervalDays)}
+                          {lastDone && ` · ✓ ${formatShortDate(lastDone, language)}`}
+                        </div>
                       </div>
-                    </div>
-                    <div className="subscription-card__due">{formatDaysUntil(next, t, tp)}</div>
-                  </button>
+                      <div className="subscription-card__due">
+                        {pending ? formatDaysUntil(due, t, tp) : formatDaysUntil(next, t, tp)}
+                      </div>
+                    </button>
+                    {pending && (
+                      <button
+                        className="reminder-row__done"
+                        onClick={() => {
+                          vibrate();
+                          toggleDone(reminder.id, due);
+                        }}
+                        aria-label={t('reminders.markDone')}
+                      >
+                        ✓ {t('reminders.markDone')}
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>

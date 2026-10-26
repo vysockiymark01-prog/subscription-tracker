@@ -23,7 +23,7 @@ function toIsoDate(year, month, day) {
  * вперёд от nextPaymentDate. Для месяцев до nextPaymentDate ничего не находим,
  * так как прошлых дат списаний приложение не хранит (только историю цены).
  */
-function occurrencesInMonth(subscription, year, month) {
+function occurrencesInMonth(subscription, year, month, today) {
   const monthStart = toIsoDate(year, month, 1);
   const monthEnd = toIsoDate(year, month, new Date(year, month + 1, 0).getDate());
   const dates = [];
@@ -31,7 +31,8 @@ function occurrencesInMonth(subscription, year, month) {
   // одна дата списания, без проекции вперёд по периоду.
   if (subscription.oneTime) {
     const d = subscription.nextPaymentDate;
-    if (d >= monthStart && d <= monthEnd) dates.push(d);
+    // Прошедший платёж уже лежит в истории оплат — второй раз не показываем.
+    if (d >= monthStart && d <= monthEnd && d >= today) dates.push(d);
     return dates;
   }
   // Число месяца фиксируем один раз от исходной даты списания — иначе после
@@ -42,7 +43,7 @@ function occurrencesInMonth(subscription, year, month) {
   let guard = 0;
   while (guard < 60) {
     if (current > monthEnd) break;
-    if (current >= monthStart) dates.push(current);
+    if (current >= monthStart && current >= today) dates.push(current);
     current = addPeriod(current, subscription.period, anchorDay);
     guard++;
   }
@@ -50,7 +51,7 @@ function occurrencesInMonth(subscription, year, month) {
 }
 
 export default function CalendarScreen() {
-  const { activeSubscriptions } = useAppData();
+  const { activeSubscriptions, subscriptions } = useAppData();
   const { reminders } = useReminders();
   const { t, language } = useLanguage();
   const today = todayISO();
@@ -58,25 +59,49 @@ export default function CalendarScreen() {
   const [cursor, setCursor] = useState({ year: now.getFullYear(), month: now.getMonth() });
   const [selectedDay, setSelectedDay] = useState(today);
 
-  // Прошлых списаний приложение не хранит, поэтому не даём листать раньше текущего месяца.
   const isAtCurrentMonth = cursor.year === now.getFullYear() && cursor.month === now.getMonth();
+
+  // Назад можно листать до самого раннего месяца, где что-то было: первая
+  // оплата из истории или начало напоминания. Раньше — пустые месяцы.
+  const earliestMonthKey = useMemo(() => {
+    let min = today.slice(0, 7);
+    for (const s of subscriptions) {
+      for (const p of s.payments ?? []) if (p.date.slice(0, 7) < min) min = p.date.slice(0, 7);
+    }
+    for (const r of reminders) {
+      if (r.startDate && r.startDate.slice(0, 7) < min) min = r.startDate.slice(0, 7);
+    }
+    return min;
+  }, [subscriptions, reminders, today]);
+  const cursorKey = `${cursor.year}-${pad(cursor.month + 1)}`;
+  const canGoPrev = cursorKey > earliestMonthKey;
 
   const eventsByDay = useMemo(() => {
     const map = {};
+    const monthStart = toIsoDate(cursor.year, cursor.month, 1);
+    const monthEnd = toIsoDate(cursor.year, cursor.month, new Date(cursor.year, cursor.month + 1, 0).getDate());
+    // Прошедшие списания — из истории оплат (в т.ч. у подписок, которые уже в архиве).
+    for (const s of subscriptions) {
+      for (const p of s.payments ?? []) {
+        if (p.date >= monthStart && p.date <= monthEnd) {
+          (map[p.date] ??= []).push({ type: 'payment', data: s, payment: p });
+        }
+      }
+    }
+    // Будущие — проекция от даты следующего списания.
     for (const s of activeSubscriptions) {
-      for (const date of occurrencesInMonth(s, cursor.year, cursor.month)) {
+      for (const date of occurrencesInMonth(s, cursor.year, cursor.month, today)) {
         (map[date] ??= []).push({ type: 'subscription', data: s });
       }
     }
-    const monthStart = toIsoDate(cursor.year, cursor.month, 1);
-    const monthEnd = toIsoDate(cursor.year, cursor.month, new Date(cursor.year, cursor.month + 1, 0).getDate());
     for (const r of reminders) {
       for (const date of getOccurrencesInRange(r, monthStart, monthEnd)) {
-        (map[date] ??= []).push({ type: 'reminder', data: r });
+        const done = (r.completions ?? []).includes(date);
+        (map[date] ??= []).push({ type: 'reminder', data: r, done });
       }
     }
     return map;
-  }, [activeSubscriptions, reminders, cursor]);
+  }, [activeSubscriptions, subscriptions, reminders, cursor, today]);
 
   const weeks = useMemo(() => {
     const firstOfMonth = new Date(cursor.year, cursor.month, 1);
@@ -138,7 +163,7 @@ export default function CalendarScreen() {
     if (Math.abs(deltaX) < SWIPE_THRESHOLD || Math.abs(deltaX) < Math.abs(deltaY)) return;
     if (deltaX < 0) {
       goNextMonth();
-    } else if (!isAtCurrentMonth) {
+    } else if (canGoPrev) {
       goPrevMonth();
     }
   }
@@ -160,7 +185,7 @@ export default function CalendarScreen() {
         <button
           className="calendar-nav__arrow"
           onClick={goPrevMonth}
-          disabled={isAtCurrentMonth}
+          disabled={!canGoPrev}
           aria-label={t('calendar.prevMonth')}
         >
           ←
@@ -207,16 +232,18 @@ export default function CalendarScreen() {
           <p className="calendar-day-events__empty">{t('calendar.selectedDay.empty')}</p>
         ) : (
           <div className="subscription-list">
-            {selectedEvents.map(({ type, data }) => {
+            {selectedEvents.map(({ type, data, payment, done }) => {
               const icon = getIconFor(data);
+              let meta;
+              if (type === 'payment') meta = `✓ ${t('calendar.paid')} · ${formatMoney(payment.amount, payment.currency)}`;
+              else if (type === 'subscription') meta = formatMoney(data.price, data.currency);
+              else meta = `${t('reminders.calendarTag')}${done ? ` · ✓ ${t('reminders.done')}` : ''}`;
               return (
                 <div key={`${type}-${data.id}`} className="subscription-card">
                   <PresetIcon color={icon.color} letter={icon.letter} emoji={icon.emoji} />
                   <div className="subscription-card__info">
                     <div className="subscription-card__name">{data.name}</div>
-                    <div className="subscription-card__meta">
-                      {type === 'subscription' ? formatMoney(data.price, data.currency) : t('reminders.calendarTag')}
-                    </div>
+                    <div className="subscription-card__meta">{meta}</div>
                   </div>
                 </div>
               );

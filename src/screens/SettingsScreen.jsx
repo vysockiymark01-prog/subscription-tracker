@@ -3,6 +3,7 @@ import { useAppData } from '../context/AppDataContext.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { useExchangeRate } from '../context/ExchangeRateContext.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useReminders } from '../context/RemindersContext.jsx';
 import { todayISO } from '../utils/dates.js';
 import { CURRENCIES } from '../utils/money.js';
 import { LANGUAGES } from '../i18n/index.js';
@@ -30,6 +31,11 @@ export default function SettingsScreen() {
   const { exportData, importData, importCsv } = useAppData();
   const { displayCurrency, setDisplayCurrency, status, ratesDate, refreshRates } = useExchangeRate();
   const { t, language, setLanguage } = useLanguage();
+  const { refresh: refreshReminders } = useReminders();
+  const [budgetAmount, setBudgetAmount] = useState(() => storage.getMonthlyBudget()?.amount ?? '');
+  const [budgetCurrency, setBudgetCurrency] = useState(() => storage.getMonthlyBudget()?.currency ?? 'RUB');
+  const [budgetSaved, setBudgetSaved] = useState(false);
+  const [weeklySummary, setWeeklySummary] = useState(() => storage.isWeeklySummaryEnabled());
   const fileInputRef = useRef(null);
   const [message, setMessage] = useState(null);
   const [showAbout, setShowAbout] = useState(false);
@@ -83,6 +89,7 @@ export default function SettingsScreen() {
           setMessage({ type: 'success', text: t('settings.data.importSuccessCsv', { count: created.length }) });
         } else {
           importData(String(reader.result));
+          refreshReminders();
           setMessage({ type: 'success', text: t('settings.data.importSuccessJson') });
         }
       } catch (err) {
@@ -91,6 +98,19 @@ export default function SettingsScreen() {
     };
     reader.readAsText(file);
     e.target.value = '';
+  }
+
+  function handleSaveBudget(e) {
+    e.preventDefault();
+    const amount = Number(budgetAmount);
+    storage.setMonthlyBudget(amount > 0 ? { amount, currency: budgetCurrency } : null);
+    if (!(amount > 0)) setBudgetAmount('');
+    setBudgetSaved(true);
+  }
+
+  function handleWeeklySummaryToggle(checked) {
+    storage.setWeeklySummaryEnabled(checked);
+    setWeeklySummary(checked);
   }
 
   function handleAddCategory(e) {
@@ -231,6 +251,56 @@ export default function SettingsScreen() {
             )}
           </p>
         )}
+      </section>
+
+      <section className="settings-section">
+        <h2>{t('budget.settingsTitle')}</h2>
+        <p className="settings-hint">{t('budget.settingsHint')}</p>
+        <form className="settings-add-category" onSubmit={handleSaveBudget}>
+          <input
+            className="input"
+            type="number"
+            min="0"
+            step="1"
+            placeholder={t('budget.placeholder')}
+            value={budgetAmount}
+            onChange={(e) => {
+              setBudgetAmount(e.target.value);
+              setBudgetSaved(false);
+            }}
+          />
+          <select
+            className="input settings-budget-currency"
+            value={budgetCurrency}
+            onChange={(e) => {
+              setBudgetCurrency(e.target.value);
+              setBudgetSaved(false);
+            }}
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.symbol} {c.code}
+              </option>
+            ))}
+          </select>
+          <button className="btn btn--secondary" type="submit">
+            {t('budget.save')}
+          </button>
+        </form>
+        {budgetSaved && <p className="settings-hint">{t('budget.saved')}</p>}
+      </section>
+
+      <section className="settings-section">
+        <h2>{t('weekly.settingsTitle')}</h2>
+        <label className="toggle-row">
+          <span>{t('weekly.settingsToggle')}</span>
+          <input
+            type="checkbox"
+            checked={weeklySummary}
+            onChange={(e) => handleWeeklySummaryToggle(e.target.checked)}
+          />
+        </label>
+        <p className="settings-hint">{t('weekly.settingsHint')}</p>
       </section>
 
       <section className="settings-section">

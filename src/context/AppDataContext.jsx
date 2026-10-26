@@ -64,6 +64,24 @@ export function AppDataProvider({ children }) {
     return result;
   }, [refresh]);
 
+  const markPaid = useCallback((id) => {
+    const updated = storage.markPaid(id);
+    refresh();
+    return updated;
+  }, [refresh]);
+
+  const removePayment = useCallback((id, date) => {
+    const updated = storage.removePayment(id, date);
+    refresh();
+    return updated;
+  }, [refresh]);
+
+  const extendOneTime = useCallback((id) => {
+    const updated = storage.extendOneTime(id);
+    refresh();
+    return updated;
+  }, [refresh]);
+
   const importData = useCallback((json) => {
     const result = storage.importData(json);
     refresh();
@@ -111,6 +129,9 @@ export function AppDataProvider({ children }) {
     resumeSubscription,
     cancelMany,
     deleteMany,
+    markPaid,
+    removePayment,
+    extendOneTime,
     exportData: storage.exportData,
     importData,
     importCsv,

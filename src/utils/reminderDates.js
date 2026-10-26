@@ -61,3 +61,26 @@ export function getOccurrencesInRange(reminder, fromIso, toIso) {
 export function isFinished(reminder, fromIso = todayISO()) {
   return getNextOccurrence(reminder, fromIso) === null;
 }
+
+/**
+ * Последняя дата события на сегодня или раньше (с учётом даты окончания) —
+ * то событие, которое можно отметить «Сделано». null, если событий ещё не было.
+ */
+export function getDueOccurrence(reminder, todayIso = todayISO()) {
+  const { startDate, intervalDays, endDate } = reminder;
+  if (!startDate || !intervalDays || intervalDays < 1 || todayIso < startDate) return null;
+  const limit = endDate && endDate < todayIso ? endDate : todayIso;
+  if (limit < startDate) return null;
+  const diffDays = Math.round((new Date(limit) - new Date(startDate)) / 86400000);
+  return addDays(startDate, Math.floor(diffDays / intervalDays) * intervalDays);
+}
+
+/**
+ * Нужно ли сейчас показывать кнопку «Сделано»: последнее наступившее событие
+ * ещё не отмечено, и следующее после него пока не наступило.
+ */
+export function isDuePending(reminder, todayIso = todayISO()) {
+  const due = getDueOccurrence(reminder, todayIso);
+  if (!due) return false;
+  return !(reminder.completions ?? []).includes(due);
+}

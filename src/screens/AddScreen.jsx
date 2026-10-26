@@ -4,7 +4,7 @@ import { useNotifications } from '../context/NotificationsContext.jsx';
 import { vibrate } from '../utils/haptics.js';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { searchPresets } from '../data/presets.js';
-import { CATEGORIES, PERIODS, REMINDER_OPTIONS, getCustomCategories } from '../storage.js';
+import { CATEGORIES, PERIODS, REMINDER_OPTIONS, getCustomCategories, getKnownCards } from '../storage.js';
 import { todayISO } from '../utils/dates.js';
 import { CURRENCIES } from '../utils/money.js';
 import PresetIcon from '../components/PresetIcon.jsx';
@@ -24,6 +24,7 @@ function emptyForm() {
     reminderDays: 3,
     splitCount: 1,
     oneTime: false,
+    card: '',
     customColor: '',
     emoji: '',
     note: '',
@@ -40,6 +41,7 @@ export default function AddScreen({ onClose }) {
   const [selectedPreset, setSelectedPreset] = useState(null);
   const [form, setForm] = useState(emptyForm());
   const [customCategories] = useState(() => getCustomCategories());
+  const [knownCards] = useState(() => getKnownCards());
 
   const results = useMemo(() => {
     const bySearch = searchPresets(query);
@@ -86,6 +88,7 @@ export default function AddScreen({ onClose }) {
       reminderDays: Number(form.reminderDays),
       splitCount: Number(form.splitCount) > 0 ? Number(form.splitCount) : 1,
       oneTime: form.oneTime,
+      card: form.card.trim(),
       iconKey: selectedPreset?.id ?? null,
       customColor: form.customColor || null,
       emoji: form.emoji || null,
@@ -263,6 +266,23 @@ export default function AddScreen({ onClose }) {
                 </optgroup>
               )}
             </select>
+          </label>
+
+          <label>
+            {t('add.card')}
+            <input
+              className="input"
+              type="text"
+              list="known-cards-add"
+              placeholder={t('add.card.placeholder')}
+              value={form.card}
+              onChange={(e) => setField('card', e.target.value)}
+            />
+            <datalist id="known-cards-add">
+              {knownCards.map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
           </label>
 
           <label>

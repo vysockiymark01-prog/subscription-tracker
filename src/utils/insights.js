@@ -15,7 +15,7 @@ export function getSavingsSinceCancellation(subscriptions) {
   const totals = {};
   const now = Date.now();
   for (const s of subscriptions) {
-    if (s.status !== 'cancelled' || !s.cancelledAt) continue;
+    if (s.status !== 'cancelled' || !s.cancelledAt || s.oneTime) continue;
     const months = Math.max(0, (now - new Date(s.cancelledAt).getTime()) / (86400000 * DAYS_PER_MONTH));
     const monthly = toMonthly(splitPrice(s), s.period);
     const code = s.currency ?? 'RUB';
@@ -38,6 +38,13 @@ export function getLifetimeSpend(subscriptions) {
     const endTime = s.status === 'cancelled' && s.cancelledAt ? new Date(s.cancelledAt).getTime() : now;
     const code = s.currency ?? 'RUB';
     const count = s.splitCount > 0 ? s.splitCount : 1;
+    // Разовая — один платёж (если его дата уже наступила), а не помесячно.
+    if (s.oneTime) {
+      if (s.nextPaymentDate && new Date(s.nextPaymentDate).getTime() <= endTime) {
+        totals[code] = (totals[code] ?? 0) + s.price / count;
+      }
+      continue;
+    }
     for (let i = 0; i < history.length; i++) {
       const segStart = new Date(history[i].date).getTime();
       const segEnd = i + 1 < history.length ? new Date(history[i + 1].date).getTime() : endTime;

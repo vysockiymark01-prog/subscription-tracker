@@ -28,6 +28,12 @@ export function RemindersProvider({ children }) {
     return result;
   }, [refresh]);
 
+  const toggleDone = useCallback((id, date) => {
+    const updated = storage.toggleReminderDone(id, date);
+    refresh();
+    return updated;
+  }, [refresh]);
+
   const getById = useCallback(
     (id) => reminders.find((r) => r.id === id) ?? null,
     [reminders],
@@ -39,6 +45,8 @@ export function RemindersProvider({ children }) {
     addReminder,
     updateReminder,
     deleteReminder,
+    toggleDone,
+    refresh,
   };
 
   return <RemindersContext.Provider value={value}>{children}</RemindersContext.Provider>;

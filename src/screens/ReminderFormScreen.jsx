@@ -179,6 +179,24 @@ export default function ReminderFormScreen({ id, onClose }) {
         </button>
       </form>
 
+      {existing && (existing.completions ?? []).length > 0 && (
+        <section className="payments-history">
+          <div className="payments-history__header">
+            <h3>{t('reminders.doneHistory')}</h3>
+          </div>
+          <div className="reminder-preview__dates">
+            {[...existing.completions]
+              .reverse()
+              .slice(0, 12)
+              .map((d) => (
+                <span key={d} className="reminder-preview__date">
+                  ✓ {formatShortDate(d, language)}
+                </span>
+              ))}
+          </div>
+        </section>
+      )}
+
       {existing && (
         <div className="detail-actions">
           {!confirmingDelete ? (

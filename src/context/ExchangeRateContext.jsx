@@ -23,10 +23,11 @@ export function ExchangeRateProvider({ children }) {
       });
   }, []);
 
+  // Курс грузим всегда (он кэшируется на 12 часов): даже при раздельном показе
+  // валют он нужен для бюджета на месяц, который задаётся в одной валюте.
   useEffect(() => {
-    if (displayCurrency === 'grouped') return;
     loadRates();
-  }, [displayCurrency, loadRates]);
+  }, [loadRates]);
 
   const setDisplayCurrency = useCallback((value) => {
     storage.setDisplayCurrencyPreference(value);
@@ -43,9 +44,19 @@ export function ExchangeRateProvider({ children }) {
     [displayCurrency, rates],
   );
 
+  // Конвертация в конкретную валюту независимо от настройки отображения.
+  const convertTo = useCallback(
+    (amount, fromCode, toCode) => {
+      if (fromCode === toCode) return amount;
+      if (!rates) return null;
+      return convertAmount(amount, fromCode, toCode, rates);
+    },
+    [rates],
+  );
+
   const value = useMemo(
-    () => ({ displayCurrency, setDisplayCurrency, convert, status, ratesDate, refreshRates }),
-    [displayCurrency, setDisplayCurrency, convert, status, ratesDate, refreshRates],
+    () => ({ displayCurrency, setDisplayCurrency, convert, convertTo, status, ratesDate, refreshRates }),
+    [displayCurrency, setDisplayCurrency, convert, convertTo, status, ratesDate, refreshRates],
   );
 
   return <ExchangeRateContext.Provider value={value}>{children}</ExchangeRateContext.Provider>;

@@ -20,6 +20,12 @@ export function NotificationsProvider({ children }) {
     notifications.checkAndNotify(activeSubscriptions, language, reminders);
   }, [activeSubscriptions, language, reminders]);
 
+  // Расписание для фоновой проверки обновляем при каждом изменении данных.
+  useEffect(() => {
+    if (permission !== 'granted') return;
+    notifications.syncBackgroundSchedule(activeSubscriptions, reminders, language);
+  }, [activeSubscriptions, reminders, language, permission]);
+
   const requestPermission = useCallback(async () => {
     const result = await notifications.requestPermission();
     setPermission(result);

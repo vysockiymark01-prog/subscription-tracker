@@ -38,6 +38,8 @@ export default function ArchiveScreen({ onOpenDetail }) {
     const totals = {};
     for (const s of cancelledSubscriptions) {
       const code = s.currency ?? 'RUB';
+      // Разовая не повторялась бы — от её отмены экономии «в год» нет.
+      if (s.oneTime) continue;
       totals[code] = (totals[code] ?? 0) + toAnnual(s.price, s.period);
     }
     return Object.entries(totals);
